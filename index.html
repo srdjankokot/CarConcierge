@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Concierge — Prepustite nam brigu o vozilu</title>
+<meta name="description" content="Auto Concierge preuzima vaše vozilo sa adrese, vodi ga na servis, tehnički, gume ili pranje i vraća nazad. Sve zakazujete i pratite kroz aplikaciju.">
+<meta property="og:title" content="Auto Concierge — Prepustite nam brigu o vozilu">
+<meta property="og:description" content="Zakažite preuzimanje, pratite status uživo, primite vozilo nazad. Novi Sad.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0d1410">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1410;
+    --bg-2: #111b15;
+    --surface: #15211a;
+    --surface-2: #1a2a21;
+    --border: #243a2d;
+    --border-soft: #1d2e24;
+    --text: #eef2ed;
+    --text-dim: #9db0a3;
+    --text-faint: #6b8275;
+    --brass: #c9a86a;
+    --brass-soft: #d8bd8a;
+    --mint: #6fd3a3;
+    --display: 'Sora', system-ui, sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(13,20,16,0.82);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .logo { display: flex; align-items: center; gap: 11px; font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: -0.3px; }
+  .logo .mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--brass), #a07e3f);
+    display: grid; place-items: center; color: #1a130a; font-weight: 700; font-size: 16px;
+    box-shadow: 0 2px 12px rgba(201,168,106,0.25);
+  }
+  .nav-links { display: flex; align-items: center; gap: 30px; }
+  .nav-links a { color: var(--text-dim); font-size: 14.5px; font-weight: 450; transition: color .18s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--brass); color: #1a130a !important; font-weight: 600;
+    padding: 9px 18px; border-radius: 9px; font-size: 14.5px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,106,0.3); }
+  .menu-btn { display: none; background: none; border: none; color: var(--text); cursor: pointer; }
+
+  /* ---------- HERO ---------- */
+  .hero { position: relative; padding: 88px 0 72px; overflow: hidden; }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 420px at 78% -8%, rgba(201,168,106,0.10), transparent 60%),
+      radial-gradient(700px 500px at 8% 30%, rgba(111,211,163,0.06), transparent 55%);
+    pointer-events: none;
+  }
+  .hero-grid { position: relative; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12.5px; font-weight: 500;
+    color: var(--brass-soft); letter-spacing: 0.5px;
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 6px 13px; border-radius: 20px; margin-bottom: 26px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 8px var(--mint); }
+  h1 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(38px, 5.4vw, 60px);
+    line-height: 1.04; letter-spacing: -1.6px; margin-bottom: 22px;
+  }
+  h1 .accent { color: var(--brass); }
+  .hero p.lead { font-size: 18.5px; color: var(--text-dim); max-width: 480px; margin-bottom: 32px; line-height: 1.6; }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn-primary {
+    background: var(--brass); color: #1a130a; font-weight: 600; font-size: 15.5px;
+    padding: 14px 26px; border-radius: 11px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(201,168,106,0.22);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(201,168,106,0.34); }
+  .btn-ghost {
+    border: 1px solid var(--border); color: var(--text); font-weight: 500; font-size: 15.5px;
+    padding: 14px 24px; border-radius: 11px; background: var(--surface);
+    transition: border-color .15s, background .15s;
+  }
+  .btn-ghost:hover { border-color: var(--brass); background: var(--surface-2); }
+
+  /* ---------- HERO SIGNATURE: live status panel ---------- */
+  .status-panel {
+    background: linear-gradient(165deg, var(--surface), var(--bg-2));
+    border: 1px solid var(--border);
+    border-radius: 18px; padding: 22px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  .sp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--border-soft); }
+  .sp-car { display: flex; align-items: center; gap: 12px; }
+  .sp-car .ic { width: 40px; height: 40px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; font-size: 19px; }
+  .sp-car .t1 { font-weight: 600; font-size: 14.5px; }
+  .sp-car .t2 { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); }
+  .sp-live { font-family: var(--mono); font-size: 11px; color: var(--mint); display: flex; align-items: center; gap: 6px; }
+  .sp-live .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(111,211,163,0.5); } 50% { opacity: .6; box-shadow: 0 0 0 5px rgba(111,211,163,0); } }
+  .timeline { display: flex; flex-direction: column; gap: 2px; }
+  .tl-step { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; position: relative; }
+  .tl-rail { display: flex; flex-direction: column; align-items: center; }
+  .tl-node { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); flex-shrink: 0; margin-top: 3px; z-index: 1; }
+  .tl-line { width: 2px; flex: 1; background: var(--border); min-height: 22px; }
+  .tl-step.done .tl-node { background: var(--mint); border-color: var(--mint); box-shadow: 0 0 10px rgba(111,211,163,0.4); }
+  .tl-step.done .tl-line { background: var(--mint); }
+  .tl-step.active .tl-node { background: var(--brass); border-color: var(--brass); box-shadow: 0 0 0 4px rgba(201,168,106,0.18); }
+  .tl-body .s1 { font-weight: 550; font-size: 14px; }
+  .tl-step.pending .tl-body .s1 { color: var(--text-faint); }
+  .tl-body .s2 { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+  .tl-step.active .tl-body .s2 { color: var(--brass-soft); }
+
+  /* ---------- STATS STRIP ---------- */
+  .strip { border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); background: var(--bg-2); }
+  .strip-inner { display: grid; grid-template-columns: repeat(3,1fr); }
+  .stat { padding: 30px 24px; text-align: center; border-right: 1px solid var(--border-soft); }
+  .stat:last-child { border-right: none; }
+  .stat .n { font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--brass); letter-spacing: -1px; }
+  .stat .l { font-size: 13.5px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ---------- SECTIONS ---------- */
+  section.block { padding: 84px 0; }
+  .sec-eyebrow { font-family: var(--mono); font-size: 12.5px; color: var(--brass-soft); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 3.5vw, 38px); letter-spacing: -1px; line-height: 1.1; max-width: 620px; }
+  .sec-sub { color: var(--text-dim); font-size: 16.5px; max-width: 560px; margin-top: 14px; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 48px; }
+  .step { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 24px; position: relative; transition: border-color .2s, transform .2s; }
+  .step:hover { border-color: var(--border); transform: translateY(-3px); }
+  .step .num { font-family: var(--mono); font-size: 13px; color: var(--brass); font-weight: 600; }
+  .step h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 14px 0 8px; letter-spacing: -0.3px; }
+  .step p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
+
+  /* SVG ikonice — moderni line set */
+  .ico { width: 22px; height: 22px; stroke: var(--brass); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .svc .ico { width: 26px; height: 26px; }
+  .ico-wrap { width: 48px; height: 48px; border-radius: 12px; background: rgba(201,168,106,0.10); border: 1px solid var(--border-soft); display: grid; place-items: center; margin-bottom: 16px; transition: background .2s, border-color .2s; }
+  .svc:hover .ico-wrap { background: rgba(201,168,106,0.16); border-color: var(--brass); }
+
+  /* services */
+  .services { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
+  .svc { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 26px; transition: border-color .2s, background .2s; }
+  .svc:hover { border-color: var(--brass); background: var(--surface-2); }
+  .svc h3 { font-family: var(--display); font-size: 17px; font-weight: 600; margin-bottom: 7px; }
+  .svc p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
+
+  /* slike automobila */
+  .hero-photo { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6); background: var(--surface); }
+  .car-frame { width: 100%; aspect-ratio: 16 / 10; background: linear-gradient(160deg,#2a3a32,#141f18); border-bottom: 1px solid var(--border); overflow: hidden; }
+  .car-photo { width: 100%; height: 100%; object-fit: cover; object-position: center 60%; display: block; }
+  .hero-photo .float-status {
+    z-index: 2; background: var(--surface); padding: 16px 18px;
+  }
+  .float-status .sp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border-soft); }
+  .float-status .timeline { gap: 0; }
+  .float-status .tl-step { padding: 7px 0; }
+  .float-status .tl-line { min-height: 16px; }
+  .section-photo { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 24px 50px -24px rgba(0,0,0,0.6); background: var(--bg-2); aspect-ratio: 3 / 2; }
+  .section-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .usluge-head { display: grid; grid-template-columns: 1fr 0.85fr; gap: 40px; align-items: end; }
+  @media (max-width: 900px) { .usluge-head { grid-template-columns: 1fr; } .usluge-head .section-photo { display: none; } }
+
+  /* digital differentiator */
+  .digital { background: linear-gradient(160deg, var(--bg-2), var(--bg)); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+  .dig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .dig-list { list-style: none; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
+  .dig-list li { display: flex; gap: 14px; align-items: flex-start; }
+  .dig-list .chk { width: 26px; height: 26px; border-radius: 8px; background: rgba(111,211,163,0.12); color: var(--mint); display: grid; place-items: center; flex-shrink: 0; font-size: 14px; font-weight: 700; }
+  .dig-list .dt { font-weight: 600; font-size: 15.5px; }
+  .dig-list .dd { font-size: 14px; color: var(--text-dim); }
+  .phone-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 18px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,0.7);
+  }
+  .pc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 4px 6px; }
+  .pc-top .t { font-weight: 600; font-size: 14px; }
+  .pc-top .badge { font-family: var(--mono); font-size: 10.5px; background: rgba(111,211,163,0.12); color: var(--mint); padding: 4px 9px; border-radius: 6px; }
+  .pc-row { display: flex; gap: 12px; align-items: center; padding: 13px; background: var(--bg-2); border-radius: 12px; margin-bottom: 9px; border: 1px solid var(--border-soft); }
+  .pc-row .ic { width: 38px; height: 38px; border-radius: 9px; background: var(--surface-2); display: grid; place-items: center; font-size: 17px; }
+  .pc-row .m1 { font-weight: 550; font-size: 13.5px; }
+  .pc-row .m2 { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); }
+  .pc-row .stat-tag { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 5px; }
+  .stat-tag.done { background: rgba(111,211,163,0.12); color: var(--mint); }
+  .stat-tag.prog { background: rgba(201,168,106,0.14); color: var(--brass-soft); }
+
+  /* trust */
+  .trust-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
+  .trust { padding: 24px; border-left: 2px solid var(--brass); background: var(--surface); border-radius: 0 12px 12px 0; }
+  .trust h3 { font-family: var(--display); font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .trust p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
+
+  /* FAQ */
+  .faq { max-width: 760px; margin: 44px auto 0; }
+  details { border-bottom: 1px solid var(--border-soft); }
+  summary { cursor: pointer; padding: 20px 0; font-family: var(--display); font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary .plus { color: var(--brass); font-size: 22px; transition: transform .2s; flex-shrink: 0; }
+  details[open] summary .plus { transform: rotate(45deg); }
+  details p { padding: 0 0 20px; color: var(--text-dim); font-size: 15px; line-height: 1.6; max-width: 640px; }
+
+  /* CTA / form */
+  .quote { background: linear-gradient(160deg, var(--surface), var(--bg-2)); border: 1px solid var(--border); border-radius: 22px; padding: 48px; display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: center; margin-top: 12px; }
+  .quote-left h2 { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: -0.8px; line-height: 1.1; margin-bottom: 16px; }
+  .quote-left p { color: var(--text-dim); font-size: 15.5px; margin-bottom: 22px; }
+  .quote-left .alt { font-size: 14px; color: var(--text-faint); }
+  .quote-left .alt a { color: var(--brass-soft); }
+  form { display: grid; gap: 13px; }
+  .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  label { font-size: 12.5px; color: var(--text-dim); margin-bottom: 5px; display: block; font-weight: 500; }
+  input, select, textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 13px; color: var(--text); font-family: var(--body); font-size: 14.5px; transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brass); }
+  textarea { resize: vertical; min-height: 64px; }
+  .submit { background: var(--brass); color: #1a130a; font-weight: 600; font-size: 15px; padding: 13px; border: none; border-radius: 11px; cursor: pointer; transition: transform .15s, box-shadow .15s; margin-top: 4px; }
+  .submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,106,0.3); }
+  .form-note { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+  /* footer */
+  footer { border-top: 1px solid var(--border-soft); padding: 56px 0 40px; margin-top: 84px; }
+  .foot-grid { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
+  .foot-brand { max-width: 320px; }
+  .foot-brand p { color: var(--text-dim); font-size: 14px; margin-top: 14px; line-height: 1.6; }
+  .foot-links { display: flex; gap: 56px; }
+  .foot-col h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-faint); margin-bottom: 14px; }
+  .foot-col a { display: block; color: var(--text-dim); font-size: 14px; padding: 4px 0; transition: color .15s; }
+  .foot-col a:hover { color: var(--brass-soft); }
+  .foot-bottom { margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--border-soft); color: var(--text-faint); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+    .status-panel { max-width: 440px; }
+    .dig-grid { grid-template-columns: 1fr; gap: 40px; }
+    .quote { grid-template-columns: 1fr; padding: 32px; gap: 32px; }
+    .steps { grid-template-columns: repeat(2,1fr); }
+    .services { grid-template-columns: repeat(2,1fr); }
+    .trust-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .menu-btn { display: block; }
+  }
+  @media (max-width: 560px) {
+    .strip-inner { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 1px solid var(--border-soft); }
+    .steps, .services { grid-template-columns: 1fr; }
+    .frow { grid-template-columns: 1fr; }
+    section.block { padding: 60px 0; }
+    .hero { padding: 56px 0 48px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a href="#" class="logo"><span class="mark">A</span> Auto Concierge</a>
+    <div class="nav-links">
+      <a href="#kako">Kako funkcioniše</a>
+      <a href="#usluge">Usluge</a>
+      <a href="#platforma">Platforma</a>
+      <a href="#poverenje">Poverenje</a>
+      <a href="#faq">Pitanja</a>
+      <a href="https://app.domen.rs/login" class="nav-cta">Prijava</a>
+    </div>
+    <button class="menu-btn" aria-label="Meni">☰</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <!-- <span class="eyebrow"><span class="dot"></span> Novi Sad · Concierge za vozila</span> -->
+      <h1>Vaše vozilo, <span class="accent">bez vašeg dana</span> potrošenog na to.</h1>
+      <p class="lead">Preuzimamo auto sa vaše adrese, vodimo ga na servis, tehnički, gume ili pranje — i vraćamo nazad. Sve zakazujete i pratite u aplikaciji, korak po korak.</p>
+      <div class="hero-actions">
+        <a href="https://app.domen.rs/register" class="btn-primary">Zakaži preuzimanje</a>
+        <a href="#kako" class="btn-ghost">Kako funkcioniše</a>
+      </div>
+    </div>
+
+    <!-- SIGNATURE: ilustracija auta + kompaktna status traka -->
+    <div class="hero-visual">
+      <div class="hero-photo">
+        <div class="car-frame">
+          <img class="car-photo" src="https://uploads.vw-mms.de/system/production/images/vwn/015/585/images/5676aa2c2061d19e9ed0134895822484b162f27e/DB2016AU00877_web_1600.jpg?1649150071?auto=compress&cs=tinysrgb&w=1100&h=800&fit=crop" alt="Premium automobil" loading="eager" width="1100" height="800">
+        </div>
+        <div class="float-status">
+          <div class="sp-head">
+            <div class="sp-car">
+              <span class="ic">
+                <svg class="ico" viewBox="0 0 24 24"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11M5 11h14M5 11v5m14-5v5M7 16h10M6 16v2m12-2v2"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>
+              </span>
+              <div>
+                <div class="t1">Golf 7 · 2019</div>
+                <div class="t2">Tehnički + gume</div>
+              </div>
+            </div>
+            <span class="sp-live"><span class="pulse"></span> UŽIVO</span>
+          </div>
+          <div class="timeline">
+            <div class="tl-step done">
+              <div class="tl-rail"><span class="tl-node"></span><span class="tl-line"></span></div>
+              <div class="tl-body"><div class="s1">Vozilo preuzeto</div><div class="s2">08:24 · foto sačuvana</div></div>
+            </div>
+            <div class="tl-step active">
+              <div class="tl-rail"><span class="tl-node"></span></div>
+              <div class="tl-body"><div class="s1">Usluga u toku</div><div class="s2">završetak ~10:30</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- STATS -->
+<div class="strip">
+  <div class="wrap strip-inner">
+    <div class="stat"><div class="n">1</div><div class="l">kontakt osoba od početka do kraja</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">koraka koje pratite uživo u aplikaciji</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">vaših odlazaka i čekanja u redu</div></div>
+  </div>
+</div>
+
+<!-- KAKO FUNKCIONIŠE -->
+<section class="block" id="kako">
+  <div class="wrap">
+    <div class="sec-eyebrow">Kako funkcioniše</div>
+    <h2 class="sec-title">Pet koraka, bez izgubljenog dana.</h2>
+    <p class="sec-sub">Zahtev pošaljete za par minuta. Sve ostalo radimo mi — a vi u svakom trenutku znate gde je vaše vozilo.</p>
+    <div class="steps">
+      <div class="step"><div class="num">01</div><h3>Zakažete</h3><p>Unesete vozilo, izaberete usluge i adresu, predložite vreme preuzimanja. Možete birati svog servisera ili prepustiti nama.</p></div>
+      <div class="step"><div class="num">02</div><h3>Potvrdimo ponudu</h3><p>Šaljemo tačan termin i cenu prevoza. Vi potvrđujete jednim tapom pre nego što bilo šta krene.</p></div>
+      <div class="step"><div class="num">03</div><h3>Preuzimamo auto</h3><p>Vozač dolazi na adresu, pravi foto-zapis stanja vozila i odvozi ga na dogovorenu uslugu.</p></div>
+       <div class="step"><div class="num">04</div><h3>Završavamo obavezu</h3><p>Koordiniramo servis, tehnički, gume ili pranje. Status pratite uživo, korak po korak.</p></div>
+    </div>
+    <div class="steps" >
+      
+       <div class="step"><div class="num">05</div><h3>Vraćamo vozilo</h3><p>Auto vraćamo na adresu koju ste izabrali, uz foto stanja posle i pregled. Posao se zatvara, a sve ostaje u vašoj istoriji.</p></div>
+  </div>
+</section>
+
+<!-- USLUGE -->
+<section class="block" id="usluge" style="background:var(--bg-2); border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);">
+  <div class="wrap">
+    <div class="usluge-head">
+      <div>
+        <div class="sec-eyebrow">Usluge</div>
+        <h2 class="sec-title">Sve auto-obaveze koje stalno odlažete.</h2>
+        <p class="sec-sub">Možete tražiti jednu uslugu ili kombinovati više njih u jednom preuzimanju — svaka može ići kod drugog servisera.</p>
+      </div>
+      <div class="section-photo">
+        <img src="https://repairsmith-prod-wordpress.s3.amazonaws.com/2022/11/mechanic-working-on-engine.jpg?auto=compress&cs=tinysrgb&w=800&h=540&fit=crop" alt="Elegantan automobil" loading="lazy" width="800" height="540">
+      </div>
+    </div>
+    <div class="services">
+      <div class="svc">
+        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></div>
+        <h3>Servis</h3><p>Odlazak kod mehaničara, koordinacija termina i povratak vozila nakon intervencije.</p>
+      </div>
+      <div class="svc">
+        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v3m0 10v3m8-8h-3M7 12H4"/></svg></div>
+        <h3>Zamena guma</h3><p>Sezonska zamena, balansiranje i logistika oko vulkanizera ili skladištenja guma.</p>
+      </div>
+      <div class="svc">
+        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M5 13v4m14-4v4M7 17h10"/><path d="M12 3v2m3-1l-1 1.5M9 4l1 1.5"/></svg></div>
+        <h3>Pranje i detailing</h3><p>Spoljašnje i unutrašnje pranje, dubinsko čišćenje i premium detailing tretmani.</p>
+      </div>
+      <div class="svc">
+        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M9 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
+        <h3>Tehnički pregled</h3><p>Organizacija pregleda i komunikacija statusa dok vi nastavljate svoj dan.</p>
+      </div>
+      <div class="svc">
+        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/><path d="M15 16l2 2 3-3"/></svg></div>
+        <h3>Registracija</h3><p>Pomoć oko registracionih obaveza, dokumentacije i povezanih administrativnih koraka.</p>
+      </div>
+      <div class="svc">
+        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M3 12h11l3-4h2.5a1.5 1.5 0 0 1 1.5 1.5V14h-2M3 12v4h2m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M3 12V8a1 1 0 0 1 1-1h6"/></svg></div>
+        <h3>Preuzimanje i dostava</h3><p>Prevoz vozila između adresa, servisa, garaže ili poslovne lokacije.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORMA (differentiator) -->
+<section class="block digital" id="platforma">
+  <div class="wrap dig-grid">
+    <div>
+      <div class="sec-eyebrow">Digitalna platforma</div>
+      <h2 class="sec-title">Razlika je u tome što sve vidite.</h2>
+      <p class="sec-sub">Bez dopisivanja i pogađanja gde je auto. Otvorite aplikaciju i tačno znate u kojoj je fazi.</p>
+      <ul class="dig-list">
+        <li><span class="chk">✓</span><div><div class="dt">Zakazivanje online</div><div class="dd">Vozilo, usluge i adrese unesete za par minuta — bez poziva.</div></div></li>
+        <li><span class="chk">✓</span><div><div class="dt">Praćenje statusa uživo</div><div class="dd">Svaki korak od preuzimanja do vraćanja vidite u realnom vremenu.</div></div></li>
+        <li><span class="chk">✓</span><div><div class="dt">Foto stanja pre i posle</div><div class="dd">Dokumentovano stanje vozila na preuzimanju i vraćanju — uvek dostupno.</div></div></li>
+        <li><span class="chk">✓</span><div><div class="dt">Istorija i sačuvani podaci</div><div class="dd">Vozila i serviseri ostaju sačuvani; sledeći zahtev je još brži.</div></div></li>
+      </ul>
+    </div>
+    <div class="phone-card">
+      <div class="pc-top"><span class="t">Moji poslovi</span><span class="badge">2 aktivna</span></div>
+      <div class="pc-row"><span class="ic"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 5v2.5M12 16.5V19m7-7h-2.5M7.5 12H5"/></svg></span><div><div class="m1">Audi A4 · Zamena guma</div><div class="m2">Vulkanizer Petrović · danas</div></div><span class="stat-tag prog">U TOKU</span></div>
+      <div class="pc-row"><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M9 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></span><div><div class="m1">Golf 7 · Tehnički</div><div class="m2">Vraćeno 14:10 · foto ✓</div></div><span class="stat-tag done">ZAVRŠENO</span></div>
+      <div class="pc-row"><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M5 13v4m14-4v4M7 17h10"/></svg></span><div><div class="m1">BMW X3 · Detailing</div><div class="m2">Vraćeno juče · foto ✓</div></div><span class="stat-tag done">ZAVRŠENO</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- POVERENJE -->
+<section class="block" id="poverenje">
+  <div class="wrap">
+    <div class="sec-eyebrow">Poverenje i bezbednost</div>
+    <h2 class="sec-title">Jasan proces za vozilo koje vam je važno.</h2>
+    <p class="sec-sub">Svako preuzimanje je dokumentovano, a ključni koraci se potvrđuju pre nego što nastavimo dalje.</p>
+    <div class="trust-grid">
+      <div class="trust"><h3>Provereni vozači</h3><p>Sa vašim vozilom rade samo odabrani i provereni članovi tima.</p></div>
+      <div class="trust"><h3>Foto pre i posle</h3><p>Beležimo stanje vozila na preuzimanju i vraćanju, vidljivo vama u aplikaciji.</p></div>
+      <div class="trust"><h3>Zapisnik o preuzimanju</h3><p>Stanje, kilometraža i dogovoreni zadatak evidentiraju se pre polaska.</p></div>
+      <div class="trust"><h3>Transparentna cena</h3><p>Cenu prevoza i termin potvrđujete pre nego što bilo šta krene.</p></div>
+      <div class="trust"><h3>Vi birate servisera</h3><p>Možete zadati svog majstora ili prepustiti nama da predložimo proverenog.</p></div>
+      <div class="trust"><h3>Bez iznenađenja</h3><p>Dodatne radove serviser ne izvodi bez vaše prethodne potvrde.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="block" id="faq" style="background:var(--bg-2); border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);">
+  <div class="wrap">
+    <div class="sec-eyebrow" style="text-align:center;">Pitanja</div>
+    <h2 class="sec-title" style="margin:0 auto; text-align:center;">Najčešća pitanja.</h2>
+    <div class="faq">
+      <details open><summary>Moram li biti prisutan tokom celog procesa?<span class="plus">+</span></summary><p>Ne. Potrebni ste samo za predaju ključeva pri preuzimanju i da primite vozilo pri vraćanju. Sve između pratite u aplikaciji.</p></details>
+      <details><summary>Kako znam gde je moje vozilo?<span class="plus">+</span></summary><p>U aplikaciji vidite tačan status u svakom trenutku — od preuzimanja, preko servisera, do vraćanja. Uz svaki korak dobijate i notifikaciju.</p></details>
+      <details><summary>Da li plaćam servis direktno ili preko vas?<span class="plus">+</span></summary><p>Uslugu (servis, gume, pranje) plaćate direktno serviseru. Mi naplaćujemo samo prevoz vozila, čiju cenu potvrđujete unapred.</p></details>
+      <details><summary>Mogu li da biram svog servisera?<span class="plus">+</span></summary><p>Da. Za svaku uslugu birate da li želite svog majstora ili da vam mi predložimo proverenog partnera. Sačuvane servisere lako birate i sledeći put.</p></details>
+      <details><summary>Šta ako servis pronađe dodatni kvar?<span class="plus">+</span></summary><p>Dodatni radovi se ne izvode bez vaše potvrde. Prvo dobijate informaciju i procenu, pa odlučujete.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / QUOTE FORM -->
+<section class="block" id="upit">
+  <div class="wrap">
+    <div class="quote">
+      <div class="quote-left">
+        <h2>Spremni da prepustite brigu?</h2>
+        <p>Napravite nalog i zakažite preuzimanje kroz aplikaciju, sa praćenjem statusa od početka do kraja.</p>
+        <a href="https://app.domen.rs/register" class="btn-primary" style="display:inline-block; margin-bottom:18px;">Otvori nalog i zakaži</a>
+        <div class="alt">Imate nalog? <a href="https://app.domen.rs/login">Prijavite se</a><br>Ili pošaljite brzi upit desno — javljamo se sa terminom.</div>
+      </div>
+      <div class="quote-right">
+        <form onsubmit="event.preventDefault(); alert('Hvala! U pravoj verziji ovo šalje upit. Za punu uslugu otvorite nalog u aplikaciji.');">
+          <div class="frow">
+            <div><label>Ime i prezime</label><input type="text" required placeholder="Vaše ime"></div>
+            <div><label>Telefon</label><input type="tel" required placeholder="06x xxx xxxx"></div>
+          </div>
+          <div><label>Adresa preuzimanja</label><input type="text" required placeholder="Ulica i broj, Novi Sad"></div>
+          <div class="frow">
+            <div><label>Vozilo</label><input type="text" required placeholder="Marka, model, godište"></div>
+            <div><label>Usluga</label>
+              <select required>
+                <option value="">Izaberite</option>
+                <option>Servis</option><option>Zamena guma</option><option>Pranje / detailing</option>
+                <option>Tehnički pregled</option><option>Registracija</option><option>Kombinovano</option>
+              </select>
+            </div>
+          </div>
+          <div><label>Napomena (opciono)</label><textarea placeholder="Željeni termin, dodatne informacije..."></textarea></div>
+          <button type="submit" class="submit">Pošalji upit</button>
+          <div class="form-note">Slanjem upita ne nastaje automatska rezervacija. Termin i cenu prevoza potvrđujemo u komunikaciji.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#" class="logo"><span class="mark">A</span> Auto Concierge</a>
+        <p>Concierge servis za vozila u Novom Sadu. Manje čekanja, više vremena za ono što je važno.</p>
+      </div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h4>Servis</h4>
+          <a href="#kako">Kako funkcioniše</a>
+          <a href="#usluge">Usluge</a>
+          <a href="#platforma">Platforma</a>
+          <a href="#faq">Pitanja</a>
+        </div>
+        <div class="foot-col">
+          <h4>Nalog</h4>
+          <a href="https://app.domen.rs/login">Prijava</a>
+          <a href="https://app.domen.rs/register">Registracija</a>
+          <a href="#upit">Brzi upit</a>
+        </div>
+        <div class="foot-col">
+          <h4>Kontakt</h4>
+          <a href="tel:+381600000000">06x xxx xxxx</a>
+          <a href="mailto:info@domen.rs">info@domen.rs</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Auto Concierge. Sva prava zadržana.</span>
+      <span>Novi Sad, Srbija</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // mobilni meni — jednostavan toggle
+  document.querySelector('.menu-btn')?.addEventListener('click', () => {
+    const links = document.querySelector('.nav-links');
+    const open = links.style.display === 'flex';
+    links.style.display = open ? 'none' : 'flex';
+    links.style.cssText += open ? '' : 'position:absolute;top:68px;left:0;right:0;flex-direction:column;background:var(--bg-2);padding:20px 24px;gap:16px;border-bottom:1px solid var(--border);';
+  });
+</script>
+</body>
+</html>
