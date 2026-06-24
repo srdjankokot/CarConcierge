@@ -56,12 +56,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       unsubDoc = onSnapshot(
         doc(db, "users", nextUser.uid),
-        (snap) => {
-          if (snap.exists()) {
-            clearProvisionTimer();
-            setProvisionTimedOut(false);
-            setProfile({ uid: snap.id, ...(snap.data() as Omit<UserProfile, "uid">) });
+        async (snap) => {
+          if (!snap.exists()) return;
+          const data = snap.data() as Omit<UserProfile, "uid">;
+          // Auto-heal: ako custom claim u tokenu ne prati ulogu iz dokumenta
+          // (npr. dispečer/vozač dodeljen posle prijave), osveži token — inače
+          // sigurnosna pravila i dalje vide staru ulogu.
+          try {
+            const res = await auth.currentUser?.getIdTokenResult();
+            if (res && res.claims.role !== data.role) {
+              await auth.currentUser?.getIdToken(true);
+            }
+          } catch {
+            /* ignore */
           }
+          clearProvisionTimer();
+          setProvisionTimedOut(false);
+          setProfile({ uid: snap.id, ...data });
         },
         (err) => {
           console.error("[auth] users doc listener error", err);
