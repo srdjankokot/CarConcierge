@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectFirestoreEmulator, getFirestore, initializeFirestore } from "firebase/firestore";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { connectStorageEmulator, getStorage } from "firebase/storage";
 import { FUNCTIONS_REGION, USE_EMULATORS, firebaseConfig } from "./config";
@@ -9,7 +9,18 @@ import { FUNCTIONS_REGION, USE_EMULATORS, firebaseConfig } from "./config";
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Forsiraj long-polling: WebChannel streaming se u nekim mrežama/ekstenzijama
+// bafferuje, pa realtime update-i ne stignu dok se ne reload-uje. (Guard za
+// HMR/duplu inicijalizaciju u dev-u.)
+function initDb() {
+  try {
+    return initializeFirestore(app, { experimentalForceLongPolling: true });
+  } catch {
+    return getFirestore(app);
+  }
+}
+export const db = initDb();
 export const storage = getStorage(app);
 export const functions = getFunctions(app, FUNCTIONS_REGION);
 
