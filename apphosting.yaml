@@ -1,0 +1,35 @@
+# Firebase App Hosting — runtime + build konfiguracija.
+# NEXT_PUBLIC_* su javne client vrednosti (bezbedne u repou; sigurnost je u pravilima).
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBxook6KrFPHLJkNUoHN90wLqwpHxEXWcA
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: carconcierge-1bcb8.firebaseapp.com
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: carconcierge-1bcb8
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: carconcierge-1bcb8.firebasestorage.app
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "1008578916838"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:1008578916838:web:37138072fcb9684845e627"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FUNCTIONS_REGION
+    value: europe-west1
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_USE_EMULATORS
+    value: "false"
+    availability: [BUILD, RUNTIME]
+  # Web push (opciono): kad generišeš VAPID ključ, dodaj
+  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+  #   value: <tvoj-vapid-public-key>
+  #   availability: [BUILD, RUNTIME]
