@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Concierge — MVP Specifikacija</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1e222b;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --text-dim: #9aa0ac;
+    --accent: #5dcaa5;
+    --accent-2: #7f77dd;
+    --amber: #ef9f27;
+    --blue: #378add;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+    /* role akcenti (app dizajn-sistem) */
+    --role-client: #c9a86a;
+    --role-dispatcher: #6fd3a3;
+    --role-driver: #e0954a;
+    --app-bg: #0d1410;
+    --app-surface: #15211a;
+    --app-border: #243a2d;
+  }
+  .swatch-row { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0; }
+  .swatch { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; width: 168px; background: var(--surface); }
+  .swatch .chip { height: 64px; }
+  .swatch .info { padding: 10px 12px; }
+  .swatch .info .name { font-weight: 600; font-size: 13.5px; }
+  .swatch .info .hex { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+  .role-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0; }
+  .role-card { border: 1px solid var(--border); border-radius: 14px; padding: 18px; background: #0d1410; position: relative; }
+  .role-card .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .role-card h4 { margin: 0 0 4px; color: #f3f4f6; font-size: 15px; }
+  .role-card .who { font-size: 12.5px; color: #9db0a3; margin-bottom: 14px; }
+  .role-card .demo-btn { display: inline-block; padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: #11150f; }
+  .role-card .demo-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-family: var(--mono); margin-top: 10px; border: 1px solid; background: transparent; }
+  @media (max-width: 640px) { .role-cards { grid-template-columns: 1fr; } }
+  /* copy-prompt blok */
+  .prompt-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin: 18px 0 8px; overflow: hidden; }
+  .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  .prompt-head .pt { font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 9px; }
+  .prompt-head .pt .ic { width: 26px; height: 26px; border-radius: 7px; background: rgba(93,202,165,0.14); color: var(--accent); display: grid; place-items: center; font-size: 14px; }
+  .copy-btn { background: var(--accent); color: #0d1410; font-weight: 600; font-size: 13px; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; transition: transform .12s, opacity .12s; font-family: inherit; white-space: nowrap; }
+  .copy-btn:hover { transform: translateY(-1px); }
+  .copy-btn:active { transform: translateY(0); }
+  .copy-btn.copied { background: #4f9f7f; }
+  .prompt-body { max-height: 340px; overflow-y: auto; }
+  .prompt-body pre { margin: 0; border: none; border-radius: 0; background: transparent; font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; }
+  .prompt-hint { font-size: 12.5px; color: var(--text-dim); margin: 0 0 26px; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 48px 28px 120px; }
+  header.doc {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 28px;
+    margin-bottom: 40px;
+  }
+  header.doc h1 { font-size: 30px; margin: 0 0 8px; font-weight: 600; letter-spacing: -0.5px; }
+  header.doc .sub { color: var(--text-dim); font-size: 15px; }
+  header.doc .meta {
+    margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .tag {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 13px; font-size: 12.5px; color: var(--text-dim);
+  }
+  .tag.on { color: var(--accent); border-color: rgba(93,202,165,0.4); }
+  h2 {
+    font-size: 21px; margin: 48px 0 16px; font-weight: 600;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    letter-spacing: -0.3px;
+  }
+  h2 .num { color: var(--accent); font-weight: 600; margin-right: 10px; }
+  h3 { font-size: 16.5px; margin: 28px 0 10px; font-weight: 600; color: #f3f4f6; }
+  h4 { font-size: 14.5px; margin: 20px 0 8px; font-weight: 600; color: var(--accent-2); }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  code {
+    font-family: var(--mono); font-size: 13px;
+    background: var(--surface-2); padding: 2px 6px; border-radius: 4px;
+    color: var(--accent);
+  }
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+    color: var(--text);
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 22px; margin: 16px 0;
+  }
+  .card.accent { border-left: 3px solid var(--accent); }
+  .card.warn { border-left: 3px solid var(--amber); }
+  .card.role { border-left: 3px solid var(--accent-2); }
+  table {
+    width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px;
+  }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td code { font-size: 12.5px; }
+  .status-flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0; }
+  .pill {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 11px; font-family: var(--mono); font-size: 12px;
+  }
+  .arrow-r { color: var(--text-dim); }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; vertical-align: middle; }
+  .badge.mvp { background: rgba(93,202,165,0.15); color: var(--accent); }
+  .badge.v2 { background: rgba(239,159,39,0.15); color: var(--amber); }
+  .muted { color: var(--text-dim); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .toc { columns: 2; column-gap: 36px; font-size: 14px; }
+  .toc a { color: var(--text-dim); text-decoration: none; display: block; padding: 3px 0; }
+  .toc a:hover { color: var(--accent); }
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <h1>Auto Concierge — MVP Specifikacija</h1>
+  <div class="sub">Web aplikacija za servis preuzimanja i vraćanja vozila • Novi Sad</div>
+  <div class="meta">
+    <span class="tag on">Next.js 14+ App Router</span>
+    <span class="tag on">Firebase</span>
+    <span class="tag on">TypeScript</span>
+    <span class="tag on">Responsive / PWA</span>
+    <span class="tag">Role-based UI</span>
+  </div>
+</header>
+
+<div class="card accent">
+  <strong>Namena dokumenta.</strong> Ovo je razvojna specifikacija za izradu MVP-a pomoću Claude Code CLI.
+  Cilj MVP-a je <strong>operativni kostur</strong> koji pokriva ceo životni ciklus jednog zahteva — od kreiranja,
+  preko ponude i potvrde, do preuzimanja vozila, usluge kod partnera, vraćanja i zatvaranja — bez najtežih
+  delova (live GPS, online plaćanje, pretplata). Jedna web aplikacija sa tri uloge razdvojene kroz UI.
+</div>
+
+<h2><span class="num">0</span>Sadržaj</h2>
+<div class="toc">
+  <a href="#prompt">▶ Prompt za Claude Code</a>
+  <a href="#pregled">1. Pregled i obim</a>
+  <a href="#stack">2. Tehnološki stack</a>
+  <a href="#dizajn">2A. Dizajn-sistem i boje uloga</a>
+  <a href="#uloge">3. Uloge i autentifikacija</a>
+  <a href="#onboarding">　3A. Onboarding i bootstrap admina</a>
+  <a href="#model">4. Model podataka (Firestore)</a>
+  <a href="#tok">5. Životni ciklus zahteva</a>
+  <a href="#klijent">6. Ekrani — Klijent</a>
+  <a href="#dispecer">7. Ekrani — Dispečer</a>
+  <a href="#vozac">8. Ekrani — Vozač</a>
+  <a href="#notif">9. Notifikacije</a>
+  <a href="#notif-detalji">　9A. Dozvole i fallback</a>
+  <a href="#storage">10. Fotografije i Storage</a>
+  <a href="#security">11. Sigurnosna pravila</a>
+  <a href="#validacija">　11A. Validacija formi</a>
+  <a href="#edge">　11B. Greške i edge slučajevi</a>
+  <a href="#nemvp">12. Van obima MVP-a</a>
+  <a href="#milestones">13. Predlog faza izrade</a>
+</div>
+
+<h2 id="prompt"><span class="num">▶</span>Prompt za Claude Code</h2>
+<p class="prompt-hint">Kopiraj prompt ispod i prosledi ga Claude Code-u kao prvu poruku. On sažima ceo MVP; detalje (model podataka, ekrani, tok) Claude Code čita iz ostatka ove specifikacije.</p>
+
+<div class="prompt-box">
+  <div class="prompt-head">
+    <span class="pt"><span class="ic">▶</span> Kickoff prompt — Auto Concierge MVP</span>
+    <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Kopiraj prompt</button>
+  </div>
+  <div class="prompt-body">
+<pre id="promptText"><code>Gradimo MVP web aplikacije "Auto Concierge" — concierge servis za vozila u Novom Sadu (preuzimanje vozila sa adrese → odvoz na servis/tehnički/gume/pranje → vraćanje). Puna specifikacija je u priloženom HTML dokumentu (auto-concierge-spec.html) i landing stranici (index.html). Pročitaj oba pre nego što počneš.
+
+TEHNOLOGIJA
+- Next.js 14+ (App Router, TypeScript), Tailwind CSS
+- Firebase: Auth (email+lozinka + Google/Apple), Firestore, Cloud Functions, Cloud Messaging (web push), Storage
+- Jedna web aplikacija, responsive/PWA, role-based UI
+
+TRI ULOGE (razdvojene kroz UI, ne tri aplikacije)
+- client  — registruje se sam; mobile-first
+- dispatcher — interni nalog; desktop
+- driver  — interni nalog; mobile-first
+Uloga se čita iz polja `role` na korisniku (custom claim + users dokument), pa root layout svake role-grupe postavlja data-role i odgovarajući akcent.
+
+DIZAJN (kritično: app mora da izgleda kao landing)
+- Izvuci tokene iz index.html: tamna zeleno-ugljena podloga (#0d1410), brass akcenat, fontovi Sora/Inter/JetBrains Mono, radijusi i senke. Primeni ih kao globalne tokene.
+- Razlika po ulozi je SAMO akcentna boja (sve ostalo identično):
+    client → #c9a86a (zlatna)
+    dispatcher → #6fd3a3 (mint)
+    driver → #e0954a (amber)
+- Komponente koriste var(--role-accent), ne fiksne boje.
+
+SUŠTINA TOKA
+Klijent kreira zahtev (vozilo + jedna ili više usluga, svaka usluga ima svoju destinaciju i izbor "vaš predlog" ili "moj serviser"; adresa preuzimanja + adresa vraćanja + vremenski okvir). Dispečer sastavlja ponudu (tačan termin, cena prevoza, bira partnere za "vaš predlog" stavke, može menjati stavke) → klijent potvrđuje/odbija → dispečer ručno dodeljuje vozača → vozač vodi statuse i pravi foto PRE (preuzimanje) i POSLE (vraćanje) → dispečer zatvara posao. Statusi: CREATED → OFFER_SENT → CONFIRMED → DRIVER_ASSIGNED → PICKED_UP → AT_SERVICE → SERVICE_DONE → RETURNING → DELIVERED → CLOSED (+ REJECTED/CANCELLED).
+
+VAN OBIMA MVP-a: pretplata, in-app plaćanje, live GPS, B2B flote, auto-dodela vozača, partner interfejs, chat. (Naplata prevoza je van app; uslugu klijent plaća direktno serviseru.)
+
+KAKO DA RADIMO
+Idemo fazno (F1→F6 iz specifikacije). PRVO u F1 reši auth bootstrap (seed admina/dispečera, custom claims, createDriver Cloud Function) — bez toga niko ne može da uđe kao dispečer. Validaciju prelaza statusa radi i u Cloud Functions, ne samo u sigurnosnim pravilima. Ispoštuj sekcije o validaciji formi (11A), greškama i edge slučajevima (11B), notifikacijama sa in-app fallback-om (9A) i otpornom upload-u na terenu (10). Ne uvodi funkcije van obima MVP-a bez pitanja. Pre koda u F1, predloži strukturu foldera, package.json i Firestore inicijalizaciju, pa sačekaj moju potvrdu.
+
+Počni tako što ćeš pročitati specifikaciju i landing, ukratko mi potvrditi razumevanje obima, pa predložiti F1 strukturu.</code></pre>
+  </div>
+</div>
+
+<script>
+function copyPrompt() {
+  var t = document.getElementById('promptText').innerText;
+  var btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(t).then(function(){
+    btn.textContent = 'Kopirano ✓';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent = 'Kopiraj prompt'; btn.classList.remove('copied'); }, 2000);
+  }).catch(function(){
+    // fallback za starije browsere
+    var r = document.createRange(); r.selectNode(document.getElementById('promptText'));
+    window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+    try { document.execCommand('copy'); btn.textContent = 'Kopirano ✓'; btn.classList.add('copied');
+      setTimeout(function(){ btn.textContent = 'Kopiraj prompt'; btn.classList.remove('copied'); }, 2000);
+    } catch(e) { btn.textContent = 'Kopiraj ručno'; }
+    window.getSelection().removeAllRanges();
+  });
+}
+</script>
+
+<h2 id="pregled"><span class="num">1</span>Pregled i obim</h2>
+<p>
+  Auto Concierge je premium usluga upravljanja vozilom: korisnik zakazuje preuzimanje svog vozila sa
+  zadate adrese, mi ga odvozimo na željenu uslugu (servis, tehnički pregled, registracija, zamena guma,
+  pranje/detailing) i vraćamo na izabranu adresu. Poslovni model je <em>asset-light</em> — koristimo
+  partnersku mrežu servisera i sopstvene/angažovane vozače.
+</p>
+
+<div class="card">
+  <h4>Šta MVP radi</h4>
+  <ul>
+    <li>Klijent kreira zahtev sa jednim vozilom i <strong>jednom ili više usluga</strong>, gde svaka usluga ima svoju destinaciju (serviser).</li>
+    <li>Za svaku uslugu klijent bira: <strong>„vaš predlog"</strong> (partnera bira dispečer) ili <strong>„moj serviser"</strong> (klijent upisuje/bira sačuvanog).</li>
+    <li>Dispečer pregleda zahtev, sastavlja <strong>ponudu</strong> (tačan termin, cena prevoza, eventualne izmene stavki, konkretni partneri za „vaš predlog").</li>
+    <li>Klijent <strong>potvrđuje ili odbija</strong> ponudu. Po potvrdi posao postaje aktivan.</li>
+    <li>Dispečer <strong>ručno dodeljuje vozača</strong>. Vozač vodi posao kroz statuse i pravi <strong>foto-dokumentaciju pre i posle</strong>.</li>
+    <li>Klijent prati status u realnom vremenu i dobija notifikacije. Po završetku vidi posao u istoriji.</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <h4>Ključne granice obima</h4>
+  <ul>
+    <li><strong>Bez pretplate</strong> u MVP-u — sve se vodi po zahtevu.</li>
+    <li><strong>Naplata prevoza je van aplikacije</strong> (keš/transfer). Mi naplaćujemo samo prevoz; uslugu klijent plaća direktno serviseru.</li>
+    <li><strong>Bez live GPS-a</strong> — status zamenjuje praćenje na mapi.</li>
+    <li><strong>Partner nema interfejs</strong> — vozač/dispečer vode njegov status.</li>
+    <li><strong>Bez in-app chata</strong> — komunikacija preko statusa, notifikacija i telefona.</li>
+  </ul>
+</div>
+
+<h2 id="stack"><span class="num">2</span>Tehnološki stack</h2>
+<table>
+  <tr><th>Sloj</th><th>Tehnologija</th><th>Napomena</th></tr>
+  <tr><td>Frontend</td><td><code>Next.js 14+</code> (App Router, React, TypeScript)</td><td>Jedna aplikacija, role-based rute</td></tr>
+  <tr><td>Stilizovanje</td><td>Tailwind CSS</td><td>Mobile-first za klijent/vozač, desktop za dispečer</td></tr>
+  <tr><td>Auth</td><td>Firebase Auth</td><td>Email+lozinka + Google/Apple sign-in</td></tr>
+  <tr><td>Baza</td><td>Cloud Firestore</td><td>Realtime listeneri za status</td></tr>
+  <tr><td>Backend logika</td><td>Cloud Functions</td><td>Validacija prelaza statusa, notifikacije, custom claims za uloge</td></tr>
+  <tr><td>Notifikacije</td><td>Firebase Cloud Messaging (web push)</td><td>Plus in-app prikaz</td></tr>
+  <tr><td>Fajlovi</td><td>Firebase Storage</td><td>Foto-dokumentacija pre/posle</td></tr>
+  <tr><td>PWA</td><td>Web manifest + service worker</td><td>„Dodaj na home screen", push, offline shell</td></tr>
+  <tr><td>Mape/adrese</td><td>Google Places Autocomplete <span class="badge v2">opciono</span></td><td>Za unos adresa; u MVP-u može i običan tekst</td></tr>
+</table>
+
+<div class="card accent">
+  <strong>Zašto web-only sa role-based UI.</strong> Umesto tri zasebne aplikacije, jedna Next.js aplikacija
+  služi sve tri uloge. Nakon prijave, polje <code>role</code> na korisniku određuje koje rute i komponente se
+  prikazuju. Dispečer radi na desktopu, klijent i vozač na telefonu kroz browser (PWA). Nema app store procesa,
+  jedan kod, najbrži put do MVP-a.
+</div>
+
+<h2 id="dizajn"><span class="num">2A</span>Dizajn-sistem i boje uloga</h2>
+
+<div class="card accent">
+  <strong>Princip.</strong> Aplikacija nasleđuje vizuelni identitet landing sajta — istu tamnu zeleno-ugljenu
+  podlogu, istu tipografiju, isti brass akcenat, iste oblike i komponente. Korisnik koji dođe sa sajta u app
+  ne sme da oseti prelaz na „drugi proizvod". Razlika između uloga postiže se <strong>isključivo akcentnom bojom</strong>,
+  ne menjanjem podloge, fontova ili rasporeda.
+</div>
+
+<h3>Osnovni tokeni (zajednički za sajt i sve uloge)</h3>
+<div class="swatch-row">
+  <div class="swatch"><div class="chip" style="background:#0d1410"></div><div class="info"><div class="name">Podloga</div><div class="hex">--bg #0d1410</div></div></div>
+  <div class="swatch"><div class="chip" style="background:#111b15"></div><div class="info"><div class="name">Podloga 2</div><div class="hex">--bg-2 #111b15</div></div></div>
+  <div class="swatch"><div class="chip" style="background:#15211a"></div><div class="info"><div class="name">Površina</div><div class="hex">--surface #15211a</div></div></div>
+  <div class="swatch"><div class="chip" style="background:#243a2d"></div><div class="info"><div class="name">Ivica</div><div class="hex">--border #243a2d</div></div></div>
+  <div class="swatch"><div class="chip" style="background:#eef2ed"></div><div class="info"><div class="name">Tekst</div><div class="hex">--text #eef2ed</div></div></div>
+  <div class="swatch"><div class="chip" style="background:#9db0a3"></div><div class="info"><div class="name">Tekst prigušen</div><div class="hex">--text-dim #9db0a3</div></div></div>
+</div>
+
+<p><strong>Tipografija</strong> (ista kao sajt): <code>Sora</code> za naslove/display, <code>Inter</code> za telo teksta, <code>JetBrains Mono</code> za podatke, statuse i kodove. <strong>Oblici:</strong> radijus 11–18px na karticama, 8–11px na dugmadima; senke meke i duboke. Sve preuzeto 1:1 sa landing stranice.</p>
+
+<h3>Akcentna boja po ulozi</h3>
+<p>Jedna boja po ulozi. Primenjuje se na: primarna dugmad, aktivno stanje u koracima statusa, istaknute ivice/oznake, badge uloge u zaglavlju, i ikonu uloge. Sve ostalo (podloga, tekst, kartice) ostaje identično.</p>
+
+<div class="role-cards">
+  <div class="role-card" style="border-color:#c9a86a55">
+    <h4><span class="dot" style="background:#c9a86a"></span>Klijent</h4>
+    <div class="who">Lice servisa — nasleđuje primarni brend-akcenat</div>
+    <span class="demo-btn" style="background:#c9a86a">Zakaži preuzimanje</span>
+    <br><span class="demo-badge" style="color:#c9a86a; border-color:#c9a86a">● KLIJENT</span>
+    <div style="margin-top:12px; font-family:var(--mono); font-size:12px; color:#9db0a3">--role-client<br>#c9a86a</div>
+  </div>
+  <div class="role-card" style="border-color:#6fd3a355">
+    <h4><span class="dot" style="background:#6fd3a3"></span>Dispečer</h4>
+    <div class="who">Kontrolni „command" sloj — operativna zelena</div>
+    <span class="demo-btn" style="background:#6fd3a3">Pošalji ponudu</span>
+    <br><span class="demo-badge" style="color:#6fd3a3; border-color:#6fd3a3">● DISPEČER</span>
+    <div style="margin-top:12px; font-family:var(--mono); font-size:12px; color:#9db0a3">--role-dispatcher<br>#6fd3a3</div>
+  </div>
+  <div class="role-card" style="border-color:#e0954a55">
+    <h4><span class="dot" style="background:#e0954a"></span>Vozač</h4>
+    <div class="who">Teren i akcija — topla, čitljiva na suncu</div>
+    <span class="demo-btn" style="background:#e0954a">Preuzeo sam vozilo</span>
+    <br><span class="demo-badge" style="color:#e0954a; border-color:#e0954a">● VOZAČ</span>
+    <div style="margin-top:12px; font-family:var(--mono); font-size:12px; color:#9db0a3">--role-driver<br>#e0954a</div>
+  </div>
+</div>
+
+<div class="card">
+  <h4>Implementacija (predlog)</h4>
+  <p>Akcent se postavlja jednom, na nivou role-layout-a, kao CSS varijabla. Komponente koriste <code>var(--role-accent)</code> umesto fiksne boje, pa se isti dugmići/badge-evi automatski prebojavaju po ulozi.</p>
+<pre><code>/* globalni tokeni — isti svuda */
+:root {
+  --bg: #0d1410; --bg-2: #111b15; --surface: #15211a;
+  --border: #243a2d; --text: #eef2ed; --text-dim: #9db0a3;
+}
+/* akcent se vezuje za ulogu na wrapper elementu */
+[data-role="client"]     { --role-accent: #c9a86a; }
+[data-role="dispatcher"] { --role-accent: #6fd3a3; }
+[data-role="driver"]     { --role-accent: #e0954a; }
+
+/* komponente koriste promenljivu, ne fiksnu boju */
+.btn-primary { background: var(--role-accent); color: #11150f; }
+.status-step.active .node { background: var(--role-accent); }
+.role-badge { color: var(--role-accent); border-color: var(--role-accent); }</code></pre>
+  <p class="muted">U Next.js-u: <code>data-role</code> se postavlja na root layout svake role-grupe (<code>(client)</code>, <code>(dispatcher)</code>, <code>(driver)</code>) na osnovu <code>role</code> iz korisničkog profila. Tailwind varijanta: definiši <code>roleAccent</code> kao CSS var i mapiraj je u <code>tailwind.config</code> kao boju <code>accent</code>.</p>
+</div>
+
+<div class="card warn">
+  <h4>Pravila doslednosti</h4>
+  <ul>
+    <li>Podloga, tipografija, radijusi, senke i raspored — <strong>identični</strong> za sve tri uloge i za sajt.</li>
+    <li>Menja se samo akcent. Nikad ne uvoditi drugu pozadinsku boju ili font po ulozi.</li>
+    <li>Badge uloge stoji u zaglavlju app-a (gore), da korisnik uvek zna „gde je“ — naročito bitno za naloge koji bi mogli da imaju više uloga u budućnosti.</li>
+    <li>Mint (dispečer) se na sajtu već koristi za „UŽIVO“ indikator — u app-u zadržava isto značenje (živo/aktivno), pa nema konflikta.</li>
+    <li>Kontrast: sva tri akcenta su testirana na tamnoj podlozi; tekst na dugmadima je tamni (<code>#11150f</code>) radi čitljivosti.</li>
+  </ul>
+</div>
+
+<h2 id="uloge"><span class="num">3</span>Uloge i autentifikacija</h2>
+
+<h3>Tri uloge</h3>
+<table>
+  <tr><th>Uloga</th><th>role vrednost</th><th>Kako dobija nalog</th><th>Primarni uređaj</th></tr>
+  <tr><td>Klijent</td><td><code>client</code></td><td>Sam se registruje (email+lozinka / Google / Apple)</td><td>Telefon (mobile-first)</td></tr>
+  <tr><td>Dispečer</td><td><code>dispatcher</code></td><td>Interno kreiran nalog</td><td>Desktop</td></tr>
+  <tr><td>Vozač</td><td><code>driver</code></td><td>Interno kreiran nalog</td><td>Telefon (mobile-first)</td></tr>
+</table>
+
+<h3>Autentifikacija</h3>
+<ul>
+  <li><strong>Klijent:</strong> Email + lozinka kao primarni metod, plus Google i Apple sign-in. Broj telefona se obavezno čuva u profilu (dispečeru treba za poziv), ali nije metod prijave.</li>
+  <li><strong>Dispečer i vozač:</strong> naloge kreira administrator (interno). U MVP-u dovoljno je ručno kreiranje preko Firebase konzole ili jednostavnog admin skripta.</li>
+  <li><strong>Uloge preko custom claims:</strong> <code>role</code> se postavlja kao Firebase Auth custom claim (preko Cloud Function), a duplira se i u <code>users</code> dokumentu radi lakšeg čitanja na klijentu i u sigurnosnim pravilima.</li>
+</ul>
+
+<div class="card">
+  <h4>Role-based routing (predlog strukture)</h4>
+<pre><code>/app
+  /(auth)          → login, register (javno)
+  /(client)        → guard: role === 'client'
+    /home          → lista mojih zahteva/poslova
+    /new           → kreiranje zahteva
+    /request/[id]  → detalj + status + ponuda
+    /vehicles      → moja vozila
+    /servicers     → moji sačuvani serviseri
+  /(dispatcher)    → guard: role === 'dispatcher'
+    /board         → svi zahtevi (kanban po statusu)
+    /request/[id]  → detalj + sastavljanje ponude + dodela vozača
+    /drivers       → upravljanje vozačima
+    /partners      → upravljanje partnerskom mrežom
+  /(driver)        → guard: role === 'driver'
+    /jobs          → moji dodeljeni poslovi
+    /job/[id]      → detalj + promena statusa + foto</code></pre>
+</div>
+
+<h3 id="onboarding" style="scroll-margin-top:20px">3A · Onboarding naloga i bootstrap administratora</h3>
+
+<div class="card warn">
+  <strong>Kritično za prvi start.</strong> Bez ovoga niko ne može da se uloguje kao dispečer i aplikacija je
+  prazna ljuska. Ovo je prva stvar koju treba rešiti u F1.
+</div>
+
+<h4>Kako se postavlja uloga</h4>
+<ul>
+  <li><code>role</code> se čuva na dva mesta: kao <strong>Firebase Auth custom claim</strong> (za sigurnosna pravila i guard-ove) i u <code>users/{uid}</code> dokumentu (za čitanje na klijentu).</li>
+  <li>Custom claim može da postavi <strong>samo</strong> Cloud Function sa admin privilegijama — klijent nikad ne sme sam sebi da dodeli ulogu.</li>
+  <li>Novi korisnik koji se sam registruje automatski dobija <code>role: 'client'</code> (podrazumevano, postavlja ga Auth onCreate Cloud Function).</li>
+</ul>
+
+<h4>Bootstrap prvog administratora/dispečera</h4>
+<p>Pošto dispečera ne može da kreira drugi dispečer ako nijedan ne postoji, treba <strong>seed procedura</strong>:</p>
+<pre><code>// scripts/seed-admin.ts — pokreće se lokalno jednom, sa Firebase Admin SDK
+// (servisni ključ NIJE u repo-u; čita se iz env varijable ili lokalnog fajla van git-a)
+import admin from 'firebase-admin';
+admin.initializeApp({ credential: admin.credential.cert(/* iz env */) });
+
+const uid = process.argv[2];           // uid postojećeg naloga
+const role = process.argv[3] || 'dispatcher';
+await admin.auth().setCustomUserClaims(uid, { role });
+await admin.firestore().doc(`users/${uid}`).set({ role }, { merge: true });
+console.log(`Postavljena uloga ${role} za ${uid}`);</code></pre>
+<p class="muted">Postupak: 1) napravi nalog kroz registraciju, 2) iskopiraj njegov uid iz Firebase konzole, 3) pokreni <code>npx tsx scripts/seed-admin.ts &lt;uid&gt; dispatcher</code>. Korisnik se mora odjaviti i ponovo prijaviti da bi novi claim ušao u token.</p>
+
+<h4>Kreiranje vozača i ostalih dispečera (u aplikaciji)</h4>
+<ul>
+  <li>Kad dispečer postoji, on iz panela (<code>/drivers</code>) kreira vozače. To poziva Cloud Function <code>createDriver</code> (callable, dozvoljena samo za <code>role==='dispatcher'</code>) koja: pravi Auth nalog, postavlja <code>role:'driver'</code> claim, kreira <code>users</code> dokument, i šalje vozaču privremenu lozinku (ili link za postavljanje lozinke).</li>
+  <li>Isti obrazac za kreiranje dodatnih dispečera (callable <code>createDispatcher</code>).</li>
+  <li>Promena tokena: nakon što Function postavi claim, klijent mora da pozove <code>getIdToken(true)</code> da osveži token pre nego što guard prepozna ulogu.</li>
+</ul>
+
+<h2 id="model"><span class="num">4</span>Model podataka (Firestore)</h2>
+
+<p>Glavni princip: <strong>zahtev se sastoji od stavki (services)</strong>, gde svaka stavka ima svoju uslugu i destinaciju. Jedan zahtev može voditi vozilo na više lokacija.</p>
+
+<h3>Kolekcija <code>users</code></h3>
+<pre><code>users/{uid} {
+  role: 'client' | 'dispatcher' | 'driver'
+  fullName: string
+  email: string
+  phone: string
+  createdAt: timestamp
+  fcmTokens: string[]          // za web push
+  // samo za driver:
+  isActive?: boolean           // da li je trenutno raspoloživ
+}</code></pre>
+
+<h3>Podkolekcija <code>users/{uid}/vehicles</code> <span class="muted">(samo klijent)</span></h3>
+<pre><code>vehicles/{vehicleId} {
+  make: string                 // marka (npr. Volkswagen)
+  model: string                // model (npr. Golf 7)
+  year: number                 // godište
+  plate?: string               // registracija (opciono)
+  note?: string                // npr. boja, posebne napomene
+  createdAt: timestamp
+}</code></pre>
+
+<h3>Podkolekcija <code>users/{uid}/servicers</code> <span class="muted">(sačuvani serviseri klijenta)</span></h3>
+<pre><code>servicers/{servicerId} {
+  name: string                 // npr. "Auto-servis Pera"
+  address: string
+  phone?: string
+  serviceTypes?: string[]      // npr. ['tire','technical'] — opciono
+  createdAt: timestamp
+}</code></pre>
+
+<h3>Kolekcija <code>partners</code> <span class="muted">(naša partnerska mreža — vodi dispečer)</span></h3>
+<pre><code>partners/{partnerId} {
+  name: string
+  address: string
+  phone: string
+  serviceTypes: string[]       // koje usluge pokriva
+  note?: string
+  isActive: boolean
+  createdAt: timestamp
+}</code></pre>
+
+<h3>Kolekcija <code>requests</code> <span class="muted">(srce sistema)</span></h3>
+<pre><code>requests/{requestId} {
+  clientId: string             // uid klijenta
+  status: RequestStatus        // vidi tok ispod
+  createdAt: timestamp
+  updatedAt: timestamp
+
+  // vozilo (snapshot u trenutku kreiranja — ne referenca,
+  // da istorija ostane tačna i ako klijent obriše vozilo)
+  vehicle: {
+    vehicleId?: string         // ref na sačuvano (ako postoji)
+    make: string
+    model: string
+    year: number
+    plate?: string
+  }
+
+  // logistika
+  pickup: {
+    address: string
+    lat?: number
+    lng?: number
+    timeWindow: {              // vremenski okvir, ne tačan sat
+      date: string             // 'YYYY-MM-DD'
+      from: string             // 'HH:mm'
+      to: string               // 'HH:mm'
+    }
+  }
+  dropoff: {                   // mesto vraćanja — klijent bira
+    address: string
+    lat?: number
+    lng?: number
+    sameAsPickup: boolean
+  }
+
+  // STAVKE — svaka usluga svoja destinacija
+  services: ServiceItem[]
+
+  // ponuda (popunjava dispečer)
+  offer?: {
+    proposedTime: string       // tačan predloženi termin
+    transportPrice: number     // cena prevoza (RSD) — naš prihod
+    note?: string
+    createdAt: timestamp
+    createdBy: string          // uid dispečera
+  }
+  offerRespondedAt?: timestamp // kad je klijent odgovorio
+  rejectionReason?: string
+
+  // izvršenje
+  assignedDriverId?: string
+  assignedAt?: timestamp
+
+  // foto-dokumentacija (URL-ovi iz Storage)
+  photosBefore?: string[]
+  photosAfter?: string[]
+
+  cancelledBy?: 'client' | 'dispatcher'
+  cancelReason?: string
+}</code></pre>
+
+<h4>Tip <code>ServiceItem</code></h4>
+<pre><code>ServiceItem {
+  id: string                   // lokalni id stavke
+  type: 'service' | 'technical' | 'registration' | 'tires' | 'wash' | 'other'
+  label?: string               // za 'other' ili dodatni opis
+
+  // izbor servisera za OVU stavku:
+  servicerChoice: 'suggest' | 'own'
+  //  'suggest' → dispečer bira partnera (popunjava partnerRef u ponudi)
+  //  'own'     → klijent je zadao servisera
+
+  // ako 'own':
+  ownServicer?: {
+    servicerId?: string        // ref na sačuvanog servicera
+    name: string
+    address: string
+    phone?: string
+  }
+
+  // ako 'suggest' — dispečer popunjava u ponudi:
+  partnerRef?: {
+    partnerId: string
+    name: string
+    address: string
+    phone: string
+  }
+
+  // status po stavki (vodi vozač/dispečer):
+  itemStatus?: 'pending' | 'at_servicer' | 'done'
+}</code></pre>
+
+<div class="card warn">
+  <strong>Napomena o snapshotima.</strong> Vozilo i serviser se u <code>request</code> upisuju kao <em>snapshot</em>
+  (kopija vrednosti), ne samo kao referenca. Razlog: ako klijent kasnije izmeni ili obriše vozilo/servisera,
+  istorijski zahtev mora ostati tačan. Referenca (<code>vehicleId</code>, <code>servicerId</code>) se čuva dodatno,
+  ali prikaz se oslanja na snapshot.
+</div>
+
+<h2 id="tok"><span class="num">5</span>Životni ciklus zahteva</h2>
+
+<h3>Statusi (<code>RequestStatus</code>)</h3>
+<div class="status-flow">
+  <span class="pill">CREATED</span><span class="arrow-r">→</span>
+  <span class="pill">OFFER_SENT</span><span class="arrow-r">→</span>
+  <span class="pill">CONFIRMED</span><span class="arrow-r">→</span>
+  <span class="pill">DRIVER_ASSIGNED</span><span class="arrow-r">→</span>
+  <span class="pill">PICKED_UP</span><span class="arrow-r">→</span>
+  <span class="pill">AT_SERVICE</span><span class="arrow-r">→</span>
+  <span class="pill">SERVICE_DONE</span><span class="arrow-r">→</span>
+  <span class="pill">RETURNING</span><span class="arrow-r">→</span>
+  <span class="pill">DELIVERED</span><span class="arrow-r">→</span>
+  <span class="pill">CLOSED</span>
+</div>
+<p class="muted">Izlazni statusi u bilo kom trenutku pre izvršenja: <span class="pill">REJECTED</span> (klijent odbio ponudu), <span class="pill">CANCELLED</span> (otkazano).</p>
+
+<table>
+  <tr><th>Status</th><th>Ko ga postavlja</th><th>Šta se dešava</th></tr>
+  <tr><td><code>CREATED</code></td><td>Klijent</td><td>Zahtev poslat, čeka pregled dispečera</td></tr>
+  <tr><td><code>OFFER_SENT</code></td><td>Dispečer</td><td>Sastavljena ponuda (termin, cena prevoza, partneri za „suggest" stavke)</td></tr>
+  <tr><td><code>CONFIRMED</code></td><td>Klijent</td><td>Klijent prihvatio ponudu — posao aktivan</td></tr>
+  <tr><td><code>DRIVER_ASSIGNED</code></td><td>Dispečer</td><td>Ručno dodeljen vozač</td></tr>
+  <tr><td><code>PICKED_UP</code></td><td>Vozač</td><td>Vozilo preuzeto + <strong>foto PRE</strong></td></tr>
+  <tr><td><code>AT_SERVICE</code></td><td>Vozač</td><td>Vozilo predato serviseru/partneru</td></tr>
+  <tr><td><code>SERVICE_DONE</code></td><td>Vozač/Dispečer</td><td>Usluga završena, spremno za vraćanje</td></tr>
+  <tr><td><code>RETURNING</code></td><td>Vozač</td><td>Vozilo se vozi ka mestu vraćanja</td></tr>
+  <tr><td><code>DELIVERED</code></td><td>Vozač</td><td>Vozilo predato klijentu + <strong>foto POSLE</strong></td></tr>
+  <tr><td><code>CLOSED</code></td><td>Dispečer</td><td>Posao zatvoren (naplata prevoza van app)</td></tr>
+</table>
+
+<h4>Pravila prelaza (validacija u Cloud Function)</h4>
+<ul>
+  <li>Prelaz iz <code>OFFER_SENT</code> nazad u <code>CREATED</code> dozvoljen ako klijent traži izmenu (umesto čistog odbijanja).</li>
+  <li><code>PICKED_UP</code> ne može bez bar jedne fotografije u <code>photosBefore</code>.</li>
+  <li><code>DELIVERED</code> ne može bez bar jedne fotografije u <code>photosAfter</code>.</li>
+  <li>Otkazivanje (<code>CANCELLED</code>) dozvoljeno klijentu samo do <code>DRIVER_ASSIGNED</code>; posle toga otkazuje dispečer.</li>
+  <li>Svaki prelaz upisuje <code>updatedAt</code> i (opciono) zapis u <code>requests/{id}/history</code> podkolekciju radi audit traga.</li>
+</ul>
+
+<h2 id="klijent"><span class="num">6</span>Ekrani — Klijent <span class="badge mvp">MVP</span></h2>
+
+<div class="card role">
+  <h4>6.1 Početna (<code>/home</code>)</h4>
+  <ul>
+    <li>Lista zahteva podeljena na <strong>Aktivni</strong> i <strong>Istorija</strong>.</li>
+    <li>Svaka kartica: vozilo, usluge (čip po stavci), status badge, datum.</li>
+    <li>Aktivni zahtevi se ažuriraju u realnom vremenu (Firestore listener).</li>
+    <li>Veliko dugme <strong>„Novi zahtev"</strong>.</li>
+  </ul>
+</div>
+
+<div class="card role">
+  <h4>6.2 Kreiranje zahteva (<code>/new</code>) — višekorakni tok</h4>
+  <ol>
+    <li><strong>Vozilo:</strong> bira sačuvano iz liste ili unosi novo (marka, model, godište, opciono registracija). Novo se može sačuvati u profil.</li>
+    <li><strong>Usluge (stavke):</strong> dodaje jednu ili više usluga. Za svaku:
+      <ul>
+        <li>tip usluge (servis, tehnički, registracija, gume, pranje, ostalo)</li>
+        <li>izbor servisera: <strong>„Predložite vi"</strong> ili <strong>„Moj serviser"</strong></li>
+        <li>ako „moj serviser": bira iz sačuvanih ili unosi novog (naziv, adresa, telefon) — može sačuvati za ubuduće</li>
+      </ul>
+    </li>
+    <li><strong>Preuzimanje:</strong> adresa + vremenski okvir (datum, od–do).</li>
+    <li><strong>Vraćanje:</strong> checkbox „isto kao preuzimanje" ili unos druge adrese.</li>
+    <li><strong>Pregled i slanje:</strong> rezime celog zahteva, dugme „Pošalji zahtev" → status <code>CREATED</code>.</li>
+  </ol>
+</div>
+
+<div class="card role">
+  <h4>6.3 Detalj zahteva (<code>/request/[id]</code>)</h4>
+  <ul>
+    <li><strong>Traka statusa</strong> (stepper) sa trenutnom fazom.</li>
+    <li>Kad stigne ponuda (<code>OFFER_SENT</code>): prikaz predloženog termina, <strong>cene prevoza</strong>, konkretnih partnera za „predložite vi" stavke, pa dugmad <strong>Prihvati / Odbij / Traži izmenu</strong>.</li>
+    <li>Kad je posao aktivan: prikaz dodeljenog vozača (ime, telefon za poziv), stavke sa destinacijama.</li>
+    <li>Po završetku: galerija <strong>foto pre/posle</strong>.</li>
+    <li>Dugme „Otkaži" (vidljivo samo do faze <code>DRIVER_ASSIGNED</code>).</li>
+  </ul>
+</div>
+
+<div class="card role">
+  <h4>6.4 Moja vozila (<code>/vehicles</code>) i Moji serviseri (<code>/servicers</code>)</h4>
+  <ul>
+    <li>CRUD nad sačuvanim vozilima i serviserima — da se ubrzava buduće kreiranje zahteva.</li>
+  </ul>
+</div>
+
+<h2 id="dispecer"><span class="num">7</span>Ekrani — Dispečer <span class="badge mvp">MVP</span></h2>
+
+<div class="card role">
+  <h4>7.1 Tabla (<code>/board</code>) — desktop kanban</h4>
+  <ul>
+    <li>Kolone po statusu: <em>Novi</em> (CREATED) · <em>Ponuda poslata</em> · <em>Potvrđeni</em> · <em>U toku</em> · <em>Završeni</em>.</li>
+    <li>Kartica zahteva: klijent, vozilo, broj stavki, vremenski okvir, badge ako neka stavka traži „predložite vi" (zahteva akciju).</li>
+    <li>Realtime ažuriranje. Klik otvara detalj.</li>
+    <li>Filteri: po statusu, po datumu, „samo oni koji čekaju ponudu".</li>
+  </ul>
+</div>
+
+<div class="card role">
+  <h4>7.2 Detalj + sastavljanje ponude (<code>/request/[id]</code>)</h4>
+  <ul>
+    <li>Pun pregled zahteva: vozilo, sve stavke sa destinacijama, preuzimanje/vraćanje, klijent (sa telefonom).</li>
+    <li><strong>Sastavljanje ponude:</strong>
+      <ul>
+        <li>za svaku „predložite vi" stavku — bira partnera iz mreže (<code>partners</code>), filtrirano po tipu usluge</li>
+        <li>može <strong>dodati / izmeniti / ukloniti</strong> stavke (npr. doda overu uz tehnički)</li>
+        <li>unosi <strong>tačan predloženi termin</strong> i <strong>cenu prevoza</strong></li>
+        <li>opciona napomena</li>
+        <li>dugme „Pošalji ponudu" → <code>OFFER_SENT</code></li>
+      </ul>
+    </li>
+    <li>Po potvrdi klijenta: <strong>dodela vozača</strong> — padajuća lista aktivnih vozača → <code>DRIVER_ASSIGNED</code>.</li>
+    <li>Praćenje izvršenja i ručno vođenje partnerovog statusa po stavci (<code>itemStatus</code>).</li>
+    <li>Dugme „Zatvori posao" (<code>CLOSED</code>) nakon <code>DELIVERED</code>.</li>
+  </ul>
+</div>
+
+<div class="card role">
+  <h4>7.3 Vozači (<code>/drivers</code>) i Partneri (<code>/partners</code>)</h4>
+  <ul>
+    <li>Upravljanje vozačima (status aktivan/neaktivan) i partnerskom mrežom (CRUD: naziv, adresa, telefon, tipovi usluga).</li>
+  </ul>
+</div>
+
+<h2 id="vozac"><span class="num">8</span>Ekrani — Vozač <span class="badge mvp">MVP</span></h2>
+
+<div class="card role">
+  <h4>8.1 Moji poslovi (<code>/jobs</code>) — mobile-first</h4>
+  <ul>
+    <li>Lista dodeljenih poslova sortirana po vremenskom okviru preuzimanja.</li>
+    <li>Kartica: vozilo, adresa preuzimanja, vreme, trenutni status, broj destinacija.</li>
+  </ul>
+</div>
+
+<div class="card role">
+  <h4>8.2 Detalj posla (<code>/job/[id]</code>)</h4>
+  <ul>
+    <li>Sve informacije za teren: vozilo, klijent (telefon), adresa preuzimanja, destinacije po stavkama (sa telefonima servisera/partnera), adresa vraćanja.</li>
+    <li><strong>Akciona dugmad po fazi</strong> (veliki touch targets):
+      <ul>
+        <li>„Preuzeo sam vozilo" → traži <strong>upload foto PRE</strong> → <code>PICKED_UP</code></li>
+        <li>„Predao serviseru" → <code>AT_SERVICE</code></li>
+        <li>„Usluga gotova" → <code>SERVICE_DONE</code></li>
+        <li>„Vozim nazad" → <code>RETURNING</code></li>
+        <li>„Predao klijentu" → traži <strong>upload foto POSLE</strong> → <code>DELIVERED</code></li>
+      </ul>
+    </li>
+    <li>Foto-upload: direktno sa telefonske kamere, više slika, kompresija pre slanja.</li>
+  </ul>
+</div>
+
+<h2 id="notif"><span class="num">9</span>Notifikacije</h2>
+<p>Firebase Cloud Messaging (web push) + in-app prikaz. Okidaju se Cloud Function-ima na promenu statusa.</p>
+<table>
+  <tr><th>Događaj</th><th>Prima</th></tr>
+  <tr><td>Nov zahtev kreiran</td><td>Dispečer</td></tr>
+  <tr><td>Ponuda poslata</td><td>Klijent</td></tr>
+  <tr><td>Klijent prihvatio/odbio ponudu</td><td>Dispečer</td></tr>
+  <tr><td>Vozač dodeljen</td><td>Klijent + dodeljeni vozač</td></tr>
+  <tr><td>Promene statusa (preuzeto, na usluzi, vraćanje, isporučeno)</td><td>Klijent</td></tr>
+</table>
+
+<h3 id="notif-detalji" style="scroll-margin-top:20px">9A · Dozvole, fallback i pouzdanost</h3>
+
+<div class="card warn">
+  <strong>Web push nije garantovan.</strong> Korisnik može odbiti dozvolu, a na iOS-u push radi samo ako je
+  PWA dodata na home screen. Zato push <strong>nikad nije jedini</strong> kanal — uvek postoji in-app fallback.
+</div>
+
+<h4>In-app notifikacije kao osnova (uvek rade)</h4>
+<ul>
+  <li>Kolekcija <code>users/{uid}/notifications</code> — svaki događaj se upisuje ovde, bez obzira na push.</li>
+  <li>Aplikacija sluša ovu kolekciju realtime i prikazuje <strong>badge sa brojačem</strong> (zvonce u zaglavlju) + listu obaveštenja.</li>
+  <li>Pošto i klijent i vozač ionako gledaju svoj ekran sa realtime statusom, ovo pokriva slučaj kad push ne stigne.</li>
+</ul>
+<pre><code>users/{uid}/notifications/{notifId} {
+  type: 'offer_sent' | 'driver_assigned' | 'status_changed' | ...
+  requestId: string
+  title: string
+  body: string
+  read: boolean
+  createdAt: timestamp
+}</code></pre>
+
+<h4>Web push (nadogradnja, ne osnova)</h4>
+<ul>
+  <li>Traži: service worker (<code>firebase-messaging-sw.js</code>), VAPID ključ, i eksplicitno traženje dozvole.</li>
+  <li><strong>Kada tražiti dozvolu:</strong> ne odmah na učitavanju — nego posle prve smislene akcije (klijent posle prvog zahteva, vozač pri prvom loginu), uz kratko objašnjenje zašto.</li>
+  <li>FCM token se čuva u <code>users/{uid}.fcmTokens[]</code>. Token se može promeniti/isteći — osvežavati ga pri svakom loginu i čistiti nevažeće kad slanje vrati grešku.</li>
+  <li>Ako korisnik odbije dozvolu — nema ponavljanog pitanja; oslanjamo se na in-app badge.</li>
+</ul>
+
+<h4>Posebno za vozača</h4>
+<p>Dodela posla je vremenski osetljiva. Pored push + in-app badge, na <code>/jobs</code> ekranu novi dodeljen posao je vizuelno istaknut (amber traka „Novi posao"), pa vozač ne propušta posao ni ako je push promašio.</p>
+
+<h2 id="storage"><span class="num">10</span>Fotografije i Storage</h2>
+<ul>
+  <li>Putanja: <code>requests/{requestId}/before/{timestamp}.jpg</code> i <code>.../after/{timestamp}.jpg</code>.</li>
+  <li>Klijentska kompresija pre upload-a (npr. <code>browser-image-compression</code>) — cilj ~1–1.5 MB po slici.</li>
+  <li>URL-ovi se upisuju u <code>photosBefore[]</code> / <code>photosAfter[]</code> na zahtevu.</li>
+  <li>Pristup čitanju: klijent (vlasnik), dodeljeni vozač, svi dispečeri.</li>
+</ul>
+
+<h4>Upload na terenu (slab signal)</h4>
+<div class="card warn">
+  Vozač često slika u garaži/podzemnom parkingu bez signala. Upload mora da bude otporan na to.
+</div>
+<ul>
+  <li><strong>Optimistično ponašanje:</strong> slika se odmah prikaže lokalno (preview iz blob-a), status se ne menja dok upload ne uspe.</li>
+  <li><strong>Retry red:</strong> ako upload padne, slika ostaje u redu i pokušava ponovo kad se mreža vrati (Firebase SDK ima ugrađeni resumable upload; dodatno čuvati u memoriji/IndexedDB dok ne prođe).</li>
+  <li><strong>Blokada prelaza statusa:</strong> <code>PICKED_UP</code> / <code>DELIVERED</code> se ne potvrđuju dok bar jedna slika nije stvarno otpremljena (URL upisan) — sprečava „izgubljene" foto-dokaze.</li>
+  <li>Jasan indikator vozaču: „Otpremanje… / Otpremljeno ✓ / Greška, pokušaj ponovo".</li>
+</ul>
+
+<h2 id="storage-kraj" style="display:none"></h2>
+
+<h2 id="security"><span class="num">11</span>Sigurnosna pravila (smernice)</h2>
+<pre><code>// Firestore (pseudo-pravila)
+match /users/{uid} {
+  allow read, write: if request.auth.uid == uid
+                     || hasRole('dispatcher');
+}
+match /requests/{id} {
+  allow create: if hasRole('client') && request.resource.data.clientId == request.auth.uid;
+  allow read:   if resource.data.clientId == request.auth.uid
+                || hasRole('dispatcher')
+                || resource.data.assignedDriverId == request.auth.uid;
+  allow update: if hasRole('dispatcher')
+                || (isOwnerClient() && allowedClientTransition())
+                || (isAssignedDriver() && allowedDriverTransition());
+}
+match /partners/{id} {
+  allow read:  if isSignedIn();
+  allow write: if hasRole('dispatcher');
+}
+// hasRole čita custom claim postavljen Cloud Function-om</code></pre>
+<p class="muted">Sve kritične validacije prelaza statusa rade se i u Cloud Function-u, ne samo u pravilima — pravila sprečavaju neovlašćen pristup, Function osigurava ispravan tok.</p>
+
+<h3 id="validacija" style="scroll-margin-top:20px">11A · Validacija formi i podataka</h3>
+<p>Validacija na klijentu (UX) <strong>i</strong> u Cloud Functions/pravilima (sigurnost). Klijentska sama nije dovoljna.</p>
+<table>
+  <tr><th>Polje</th><th>Pravilo</th></tr>
+  <tr><td>Ime / naziv</td><td>obavezno, 2–60 karaktera</td></tr>
+  <tr><td>Telefon</td><td>obavezno; format prilagođen SR (npr. <code>06x xxx xxxx</code>), dozvoliti razmake/crtice, normalizovati</td></tr>
+  <tr><td>Email</td><td>standardna email validacija</td></tr>
+  <tr><td>Lozinka</td><td>min 8 karaktera</td></tr>
+  <tr><td>Vozilo — marka/model</td><td>obavezno, 1–40 karaktera</td></tr>
+  <tr><td>Vozilo — godište</td><td>broj, opseg 1950 – (tekuća+1)</td></tr>
+  <tr><td>Registracija</td><td>opciono; ako uneto, osnovna provera formata</td></tr>
+  <tr><td>Adresa (preuzimanje/vraćanje)</td><td>obavezno, min 5 karaktera</td></tr>
+  <tr><td>Usluge u zahtevu</td><td>bar 1 stavka; svaka mora imati tip i izbor servisera</td></tr>
+  <tr><td>„Moj serviser"</td><td>ako izabran, naziv + adresa obavezni</td></tr>
+  <tr><td>Vremenski okvir</td><td>datum ≥ danas; <code>from</code> &lt; <code>to</code></td></tr>
+  <tr><td>Cena prevoza (ponuda)</td><td>broj &gt; 0; razuman gornji limit</td></tr>
+</table>
+
+<h3 id="edge" style="scroll-margin-top:20px">11B · Stanja grešaka i edge slučajevi</h3>
+
+<h4>Prazna stanja (empty states)</h4>
+<ul>
+  <li>Klijent bez zahteva: poruka + dugme „Napravi prvi zahtev".</li>
+  <li>Dispečerska tabla bez zahteva: prazne kolone sa diskretnom porukom.</li>
+  <li>Vozač bez poslova: „Trenutno nemaš dodeljenih poslova".</li>
+</ul>
+
+<h4>Konkurentnost i konflikti</h4>
+<ul>
+  <li><strong>Dvostruka dodela vozača:</strong> dodela ide kroz Cloud Function/transakciju koja proverava da posao još nije dodeljen — drugi dispečer dobija poruku „posao je već dodeljen".</li>
+  <li><strong>Zastareli status:</strong> ako klijent gleda ponudu koju je dispečer u međuvremenu povukao/izmenio, akcija „Prihvati" proverava aktuelni status pre izvršenja.</li>
+  <li><strong>Otkazivanje u letu:</strong> ako klijent otkaže baš dok dispečer dodeljuje vozača — Function odbija nevalidan prelaz, UI osvežava stvarno stanje.</li>
+</ul>
+
+<h4>Greške mreže i operacija</h4>
+<ul>
+  <li>Svaka akcija (slanje zahteva, ponude, promena statusa) ima tri stanja: <em>u toku</em> (spinner, dugme zaključano), <em>uspeh</em>, <em>greška</em> (poruka + „Pokušaj ponovo").</li>
+  <li>Nikad „tiha" greška — ako nešto padne, korisnik vidi jasnu poruku, ne prazno.</li>
+  <li>Idempotentnost: dupli klik na „Pošalji" ne sme da napravi dva zahteva (zaključati dugme dok traje operacija).</li>
+</ul>
+
+<h4>Auth edge slučajevi</h4>
+<ul>
+  <li>Token bez uloge još učitan (tek registrovan): prikazati učitavanje dok claim ne stigne, ne praznu stranicu.</li>
+  <li>Korisnik pristupa ruti van svoje uloge: redirect na svoj home, ne greška.</li>
+  <li>Istekla sesija: redirect na login sa porukom.</li>
+</ul>
+
+<h2 id="nemvp"><span class="num">12</span>Van obima MVP-a <span class="badge v2">V2</span></h2>
+<ul>
+  <li>Pretplatni model (5.500 RSD/mesec) i periodična naplata</li>
+  <li>In-app plaćanje prevoza (Stripe / lokalni provajder)</li>
+  <li>Live GPS praćenje vozila na mapi</li>
+  <li>B2B dealership kanal (flote, posebni tok)</li>
+  <li>Auto-predlog vozača (najbliži slobodan)</li>
+  <li>Partner interfejs (potvrda prijema/„gotovo")</li>
+  <li>In-app chat klijent–dispečer</li>
+  <li>Ocenjivanje usluge i partnera</li>
+</ul>
+
+<h2 id="milestones"><span class="num">13</span>Predlog faza izrade</h2>
+<table>
+  <tr><th>Faza</th><th>Sadržaj</th></tr>
+  <tr><td>F1 — Temelj</td><td>Next.js skela, Firebase setup, Auth (email+lozinka, Google/Apple), role custom claims, role-based routing i guard-ovi</td></tr>
+  <tr><td>F2 — Klijent zahtev</td><td>Profil vozila/servisera, višekorakno kreiranje zahteva sa stavkama, lista i detalj, istorija</td></tr>
+  <tr><td>F3 — Dispečer</td><td>Kanban tabla, sastavljanje ponude, izbor partnera, dodela vozača, upravljanje partnerima/vozačima</td></tr>
+  <tr><td>F4 — Vozač</td><td>Lista poslova, detalj, prelazi statusa, foto upload pre/posle</td></tr>
+  <tr><td>F5 — Notifikacije + PWA</td><td>FCM web push, in-app notifikacije, PWA manifest/service worker, kompresija slika</td></tr>
+  <tr><td>F6 — Sigurnost + poliranje</td><td>Firestore/Storage pravila, validacija prelaza u Functions, responsive doterivanje, testiranje toka</td></tr>
+</table>
+
+<div class="card accent" style="margin-top:40px">
+  <strong>Sledeći korak.</strong> Ova specifikacija je spremna za Claude Code. Predlog: pokreni je u modu sa
+  visokim naporom, i kreni fazno (F1 → F6). Pre F1, neka Claude Code predloži konkretnu strukturu foldera i
+  <code>package.json</code>, pa potvrdi pre generisanja koda.
+</div>
+
+</div>
+</body>
+</html>

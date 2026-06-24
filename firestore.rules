@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// F1 + F2. Princip: pravila sprečavaju neovlašćen pristup; ispravnost prelaza
+// statusa osiguravaju Cloud Functions (createRequest/cancelRequest/respondToOffer
+// pišu preko Admin SDK-a i zaobilaze pravila). Pun set za partners/notifications
+// i izmene vozača/dispečera dolazi u F3–F6.
+// ─────────────────────────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    }
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if isSelf(uid) || hasRole('dispatcher');
+      allow update: if hasRole('dispatcher')
+                    || (isSelf(uid)
+                        && !request.resource.data.diff(resource.data)
+                              .affectedKeys().hasAny(['role', 'isActive']));
+      allow create, delete: if false;
+
+      // Klijentova sačuvana vozila i serviseri — samo vlasnik.
+      match /vehicles/{vehicleId} {
+        allow read, write: if isSelf(uid);
+      }
+      match /servicers/{servicerId} {
+        allow read, write: if isSelf(uid);
+      }
+
+      // In-app notifikacije — vlasnik čita i sme da menja SAMO 'read'; piše samo Function.
+      match /notifications/{notifId} {
+        allow read: if isSelf(uid);
+        allow update: if isSelf(uid)
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+        allow create, delete: if false;
+      }
+    }
+
+    match /requests/{id} {
+      allow read: if isSignedIn() && (
+        resource.data.clientId == request.auth.uid
+        || hasRole('dispatcher')
+        || resource.data.assignedDriverId == request.auth.uid
+      );
+      // Sve izmene (kreiranje/ponuda/dodela/statusi) idu kroz Cloud Functions
+      // (Admin SDK) gde se validira prelaz statusa. Direktan upis je zabranjen.
+      allow create, update, delete: if false;
+
+      // Hronološki log komentara — čita ko sme da čita zahtev; piše samo Function.
+      match /events/{eventId} {
+        function reqData() {
+          return get(/databases/$(database)/documents/requests/$(id)).data;
+        }
+        allow read: if isSignedIn() && (
+          reqData().clientId == request.auth.uid
+          || hasRole('dispatcher')
+          || reqData().assignedDriverId == request.auth.uid
+        );
+        allow write: if false;
+      }
+    }
+
+    // Partnerska mreža — vodi dispečer; čita svaki prijavljen korisnik.
+    match /partners/{id} {
+      allow read: if isSignedIn();
+      allow write: if hasRole('dispatcher');
+    }
+  }
+}

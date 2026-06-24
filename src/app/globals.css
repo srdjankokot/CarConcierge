@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Globalni tokeni — preuzeti 1:1 sa landing stranice (index.html). Isti za sajt
+   i sve tri uloge. Razlika po ulozi je ISKLJUČIVO --role-accent (vidi dole).
+   Fontovi (--font-display/body/mono) dolaze iz next/font u layout.tsx.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #0d1410;
+  --bg-2: #111b15;
+  --surface: #15211a;
+  --surface-2: #1a2a21;
+  --border: #243a2d;
+  --border-soft: #1d2e24;
+  --text: #eef2ed;
+  --text-dim: #9db0a3;
+  --text-faint: #6b8275;
+  --brass: #c9a86a;
+  --brass-soft: #d8bd8a;
+  --mint: #6fd3a3;
+  --danger: #e26d6d;
+
+  /* Podrazumevani akcent (pre nego što role-layout postavi svoj) = brass. */
+  --role-accent: #c9a86a;
+}
+
+/* Akcent po ulozi — postavlja se na wrapper sa data-role. */
+[data-role="client"] {
+  --role-accent: #c9a86a;
+}
+[data-role="dispatcher"] {
+  --role-accent: #6fd3a3;
+}
+[data-role="driver"] {
+  --role-accent: #a78bfa;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body), system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@layer components {
+  /* Primarno dugme — boji se akcentom uloge. */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--role-accent);
+    color: #11150f;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 22px;
+    border-radius: 11px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  .btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 15px;
+    padding: 12px 20px;
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--role-accent);
+    background: var(--surface-2);
+  }
+  .btn-ghost:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 13px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14.5px;
+    transition: border-color 0.15s;
+  }
+  .input::placeholder {
+    color: var(--text-faint);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--role-accent);
+  }
+  .input-error {
+    border-color: var(--danger);
+  }
+
+  .field-error {
+    color: var(--danger);
+    font-size: 12.5px;
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--role-accent);
+    border: 1px solid var(--role-accent);
+    background: color-mix(in srgb, var(--role-accent) 14%, transparent);
+    border-radius: 20px;
+    padding: 3px 11px;
+  }
+  .role-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--role-accent);
+  }
+
+  /* Auth ekrani: tamna podloga sa diskretnim glow-om kao na landing hero-u. */
+  .auth-shell {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 32px 20px;
+    background:
+      radial-gradient(900px 420px at 80% -8%, rgba(201, 168, 106, 0.1), transparent 60%),
+      radial-gradient(700px 500px at 8% 30%, rgba(111, 211, 163, 0.06), transparent 55%),
+      var(--bg);
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brass), #a07e3f);
+    display: grid;
+    place-items: center;
+    color: #1a130a;
+    font-weight: 700;
+    font-size: 16px;
+    font-family: var(--font-display), sans-serif;
+  }
+}
