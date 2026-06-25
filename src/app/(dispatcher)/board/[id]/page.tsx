@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
@@ -10,6 +11,7 @@ import {
   SERVICE_TYPE_OPTIONS,
   formatDateTime,
   formatRsd,
+  requestIcon,
 } from "@/lib/constants";
 import {
   assignDriverCallable,
@@ -20,17 +22,16 @@ import {
   type SendOfferInput,
 } from "@/lib/dispatch/api";
 import { mapError } from "@/lib/auth/errors";
-import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { StatusStepper } from "@/components/ui/StatusStepper";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { SearchIcon } from "@/components/ui/icons";
+import { Icon } from "@/components/ui/Icon";
+import { IconWell } from "@/components/redesign/IconWell";
+import { StatusPill } from "@/components/redesign/StatusPill";
+import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
 import { Logistics } from "@/components/requests/Logistics";
 import { CommentsTimeline } from "@/components/requests/CommentsTimeline";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,21 @@ type OfferServiceForm = {
 
 const IN_PROGRESS = ["DRIVER_ASSIGNED", "PICKED_UP", "AT_SERVICE", "SERVICE_DONE", "RETURNING", "DELIVERED"];
 
+const sectionH: React.CSSProperties = {
+  fontSize: 12.5,
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: ".6px",
+  color: "var(--text-dim)",
+  margin: 0,
+};
+const cardTitle: React.CSSProperties = {
+  fontFamily: "var(--font-display)",
+  fontSize: 17,
+  fontWeight: 600,
+  margin: 0,
+};
+
 export default function DispatcherRequestDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
@@ -65,7 +81,6 @@ export default function DispatcherRequestDetailPage() {
   const [cancelBusy, setCancelBusy] = useState(false);
   const [cancelError, setCancelError] = useState("");
 
-  // Forma ponude
   const offerInit = useRef(false);
   const [offerServices, setOfferServices] = useState<OfferServiceForm[]>([]);
   const [proposedTime, setProposedTime] = useState("");
@@ -103,7 +118,6 @@ export default function DispatcherRequestDetailPage() {
     };
   }, []);
 
-  // Inicijalizuj formu ponude jednom, iz zahteva (kad je CREATED).
   useEffect(() => {
     if (request && request.status === "CREATED" && !offerInit.current) {
       offerInit.current = true;
@@ -130,10 +144,14 @@ export default function DispatcherRequestDetailPage() {
     );
   }
   if (notFound || !request) {
-    return <EmptyState icon={<SearchIcon className="h-7 w-7 text-accent" />} title="Zahtev nije pronađen" />;
+    return (
+      <div className="glass" style={{ maxWidth: 600, margin: "0 auto", padding: 40, textAlign: "center" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 600 }}>Zahtev nije pronađen</h2>
+      </div>
+    );
   }
 
-  const { vehicle, services, offer, status } = request;
+  const { vehicle, pickup, services, offer, status } = request;
   const activeDrivers = drivers.filter((d) => d.isActive !== false);
   const canCancel = [
     "CREATED",
@@ -246,95 +264,90 @@ export default function DispatcherRequestDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            {vehicle.make} {vehicle.model} · {vehicle.year}
-          </h1>
-          {vehicle.plate ? <p className="font-mono text-xs text-text-faint">{vehicle.plate}</p> : null}
+    <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+      <Link href="/board" className="rd-rise" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--text-dim)", fontSize: 14, marginBottom: 18 }}>
+        <Icon name="arrowLeft" size={16} /> Nazad
+      </Link>
+
+      <div className="rd-rise" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 14, marginBottom: 22, animationDelay: ".04s" }}>
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <IconWell name={requestIcon(services)} accent />
+          <div>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, letterSpacing: "-.8px", margin: 0 }}>
+              {vehicle.make} {vehicle.model} · {vehicle.year}
+            </h1>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
+              Preuzimanje {pickup.timeWindow.date} · {pickup.timeWindow.from}–{pickup.timeWindow.to}
+            </div>
+          </div>
         </div>
-        <StatusBadge status={status} />
+        <StatusPill status={status} big />
       </div>
 
-      {error ? (
-        <p className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
-      ) : null}
+      {error ? <p style={{ color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>{error}</p> : null}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.6fr]">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-text-dim">Status</h2>
-            <StatusStepper status={status} />
-          </Card>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.55fr]">
+        {/* LEVO: status + info */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="glass rd-rise" style={{ padding: 24, animationDelay: ".1s" }}>
+            <h2 style={{ ...sectionH, marginBottom: 18 }}>Tok zahteva</h2>
+            <AnimatedStepper status={status} />
+          </div>
 
-          <Card>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Klijent</h2>
-            <p className="mt-2 text-sm font-medium">{request.clientName || "—"}</p>
+          <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".14s" }}>
+            <h2 style={{ ...sectionH, marginBottom: 8 }}>Klijent</h2>
+            <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.clientName || "—"}</p>
             {request.clientPhone ? (
-              <a href={`tel:${request.clientPhone}`} className="font-mono text-sm text-accent">
+              <a href={`tel:${request.clientPhone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
                 {request.clientPhone}
               </a>
             ) : null}
-          </Card>
+          </div>
 
-          <Card>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Logistika</h2>
+          <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".18s" }}>
+            <h2 style={{ ...sectionH }}>Logistika</h2>
             <Logistics request={request} />
-          </Card>
+          </div>
 
           {request.assignedDriver ? (
-            <Card>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Vozač</h2>
-              <p className="mt-2 text-sm font-medium">{request.assignedDriver.name}</p>
-              <a href={`tel:${request.assignedDriver.phone}`} className="font-mono text-sm text-accent">
+            <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".22s" }}>
+              <h2 style={{ ...sectionH, marginBottom: 8 }}>Vozač</h2>
+              <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.assignedDriver.name}</p>
+              <a href={`tel:${request.assignedDriver.phone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
                 {request.assignedDriver.phone}
               </a>
-            </Card>
+            </div>
           ) : null}
 
           <CommentsTimeline requestId={request.id!} />
         </div>
 
-        <div className="flex flex-col gap-6">
-          {/* Klijent tražio izmenu prethodne ponude */}
+        {/* DESNO: akcije */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {status === "CREATED" && request.changeRequestNote ? (
-            <Card className="border-[#e0954a]/50 bg-[#e0954a]/5">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#e0954a]">
-                Klijent traži izmenu
-              </h2>
-              <p className="mt-2 text-sm">{request.changeRequestNote}</p>
-            </Card>
+            <div className="glass-soft rd-rise" style={{ padding: 20, border: "1px solid color-mix(in srgb, var(--warn) 45%, transparent)", background: "color-mix(in srgb, var(--warn) 8%, transparent)" }}>
+              <h2 style={{ ...sectionH, color: "var(--warn)" }}>Klijent traži izmenu</h2>
+              <p style={{ marginTop: 8, fontSize: 14 }}>{request.changeRequestNote}</p>
+            </div>
           ) : null}
 
           {/* CREATED → sastavljanje ponude */}
           {status === "CREATED" ? (
-            <Card className="border-accent/40">
-              <h2 className="text-lg font-semibold">Sastavi ponudu</h2>
-              <div className="mt-4 flex flex-col gap-3">
+            <div className="glass rd-rise" style={{ padding: 24, border: "1px solid color-mix(in srgb, var(--role-accent) 35%, transparent)" }}>
+              <h2 style={cardTitle}>Sastavi ponudu</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
                 {offerServices.map((s, idx) => (
-                  <div key={idx} className="flex flex-col gap-3 rounded-lg border border-border-soft bg-bg-2 p-3">
+                  <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 12, borderRadius: 14, border: "1px solid var(--glass-line)", background: "rgba(255,255,255,0.03)", padding: 12 }}>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Usluga {idx + 1}</span>
                       {offerServices.length > 1 ? (
-                        <button
-                          type="button"
-                          onClick={() => setOfferServices((arr) => arr.filter((_, i) => i !== idx))}
-                          className="text-sm text-text-dim hover:text-danger"
-                        >
+                        <button type="button" onClick={() => setOfferServices((arr) => arr.filter((_, i) => i !== idx))} className="text-sm text-text-dim hover:text-danger">
                           Ukloni
                         </button>
                       ) : null}
                     </div>
-                    <Select
-                      label="Tip"
-                      value={s.type}
-                      onChange={(e) => patchOfferService(idx, { type: e.target.value as ServiceType })}
-                      options={SERVICE_TYPE_OPTIONS}
-                    />
-                    {s.type === "other" ? (
-                      <Input label="Opis" value={s.label} onChange={(e) => patchOfferService(idx, { label: e.target.value })} />
-                    ) : null}
+                    <Select label="Tip" value={s.type} onChange={(e) => patchOfferService(idx, { type: e.target.value as ServiceType })} options={SERVICE_TYPE_OPTIONS} />
+                    {s.type === "other" ? <Input label="Opis" value={s.label} onChange={(e) => patchOfferService(idx, { label: e.target.value })} /> : null}
                     <div className="flex gap-2">
                       {(["suggest", "own"] as const).map((choice) => (
                         <button
@@ -342,8 +355,8 @@ export default function DispatcherRequestDetailPage() {
                           type="button"
                           onClick={() => patchOfferService(idx, { servicerChoice: choice })}
                           className={cn(
-                            "flex-1 rounded-lg border px-3 py-1.5 text-sm",
-                            s.servicerChoice === choice ? "border-accent text-text" : "border-border-soft text-text-dim",
+                            "flex-1 rounded-[14px] border px-3 py-2 text-sm transition-colors",
+                            s.servicerChoice === choice ? "border-accent text-text" : "border-[color:var(--glass-line)] text-text-dim",
                           )}
                         >
                           {choice === "suggest" ? "Vaš predlog" : "Klijentov serviser"}
@@ -357,9 +370,7 @@ export default function DispatcherRequestDetailPage() {
                         onChange={(e) => patchOfferService(idx, { partnerId: e.target.value })}
                         options={[
                           { value: "", label: "— Izaberi partnera —" },
-                          ...partners
-                            .filter((p) => p.isActive !== false && (p.serviceTypes ?? []).includes(s.type))
-                            .map((p) => ({ value: p.id!, label: `${p.name} (${p.address})` })),
+                          ...partners.filter((p) => p.isActive !== false && (p.serviceTypes ?? []).includes(s.type)).map((p) => ({ value: p.id!, label: `${p.name} (${p.address})` })),
                         ]}
                       />
                     ) : (
@@ -372,86 +383,58 @@ export default function DispatcherRequestDetailPage() {
                 ))}
                 <button
                   type="button"
-                  onClick={() =>
-                    setOfferServices((arr) => [
-                      ...arr,
-                      { type: "service", label: "", servicerChoice: "suggest", partnerId: "", ownName: "", ownAddress: "", ownPhone: "" },
-                    ])
-                  }
+                  onClick={() => setOfferServices((arr) => [...arr, { type: "service", label: "", servicerChoice: "suggest", partnerId: "", ownName: "", ownAddress: "", ownPhone: "" }])}
                   className="self-start text-sm text-accent"
                 >
                   + Dodaj stavku
                 </button>
-
-                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Input
-                    label="Predloženi termin"
-                    type="datetime-local"
-                    value={proposedTime}
-                    onChange={(e) => setProposedTime(e.target.value)}
-                  />
-                  <Input
-                    label="Cena prevoza (RSD)"
-                    type="number"
-                    inputMode="numeric"
-                    value={transportPrice}
-                    onChange={(e) => setTransportPrice(e.target.value)}
-                  />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Input label="Predloženi termin" type="datetime-local" value={proposedTime} onChange={(e) => setProposedTime(e.target.value)} />
+                  <Input label="Cena prevoza (RSD)" type="number" inputMode="numeric" value={transportPrice} onChange={(e) => setTransportPrice(e.target.value)} />
                 </div>
                 <Textarea label="Napomena (opciono)" value={note} onChange={(e) => setNote(e.target.value)} />
-                <Button onClick={handleSendOffer} loading={busy}>
-                  Pošalji ponudu
-                </Button>
+                <Button onClick={handleSendOffer} loading={busy}>Pošalji ponudu</Button>
               </div>
-            </Card>
+            </div>
           ) : null}
 
           {/* Ponuda (read-only) za OFFER_SENT i kasnije */}
           {offer && status !== "CREATED" ? (
-            <Card>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Ponuda</h2>
-              <div className="mt-3 flex flex-col gap-2 text-sm">
-                <Row label="Termin" value={formatDateTime(offer.proposedTime)} />
-                <Row label="Cena prevoza" value={formatRsd(offer.transportPrice)} />
-                {offer.note ? <Row label="Napomena" value={offer.note} /> : null}
+            <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".1s" }}>
+              <h2 style={{ ...sectionH, marginBottom: 12 }}>Ponuda</h2>
+              <div className="rd-grad-text" style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 700, letterSpacing: "-1px" }}>
+                {formatRsd(offer.transportPrice)}
               </div>
-              {status === "OFFER_SENT" ? (
-                <p className="mt-3 text-sm text-text-dim">Čeka se odgovor klijenta…</p>
-              ) : null}
+              <p style={{ fontSize: 12.5, color: "var(--text-dim)", margin: "6px 0 0" }}>Termin: {formatDateTime(offer.proposedTime)}</p>
+              {offer.note ? <p style={{ fontSize: 12.5, color: "var(--text-dim)", margin: "4px 0 0" }}>{offer.note}</p> : null}
+              {status === "OFFER_SENT" ? <p style={{ marginTop: 12, fontSize: 13, color: "var(--text-dim)" }}>Čeka se odgovor klijenta…</p> : null}
               {status === "REJECTED" && request.rejectionReason ? (
-                <p className="mt-3 text-sm text-[#e0954a]">Razlog odbijanja: {request.rejectionReason}</p>
+                <p style={{ marginTop: 12, fontSize: 13, color: "var(--warn)" }}>Razlog odbijanja: {request.rejectionReason}</p>
               ) : null}
-            </Card>
+            </div>
           ) : null}
 
           {/* CONFIRMED → dodela vozača */}
           {status === "CONFIRMED" ? (
-            <Card className="border-accent/40">
-              <h2 className="text-lg font-semibold">Dodeli vozača</h2>
-              <div className="mt-4 flex flex-col gap-3">
+            <div className="glass rd-rise" style={{ padding: 24, border: "1px solid color-mix(in srgb, var(--role-accent) 35%, transparent)" }}>
+              <h2 style={cardTitle}>Dodeli vozača</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
                 <Select
                   label="Aktivni vozači"
                   value={driverId}
                   onChange={(e) => setDriverId(e.target.value)}
-                  options={[
-                    { value: "", label: "— Izaberi vozača —" },
-                    ...activeDrivers.map((d) => ({ value: d.uid, label: `${d.fullName} · ${d.phone}` })),
-                  ]}
+                  options={[{ value: "", label: "— Izaberi vozača —" }, ...activeDrivers.map((d) => ({ value: d.uid, label: `${d.fullName} · ${d.phone}` }))]}
                 />
-                {activeDrivers.length === 0 ? (
-                  <p className="text-sm text-text-dim">Nema aktivnih vozača — dodajte ih na stranici Vozači.</p>
-                ) : null}
-                <Button onClick={handleAssign} loading={busy} disabled={activeDrivers.length === 0}>
-                  Dodeli vozača
-                </Button>
+                {activeDrivers.length === 0 ? <p className="text-sm text-text-dim">Nema aktivnih vozača — dodajte ih na stranici Vozači.</p> : null}
+                <Button onClick={handleAssign} loading={busy} disabled={activeDrivers.length === 0}>Dodeli vozača</Button>
               </div>
-            </Card>
+            </div>
           ) : null}
 
           {/* Usluge + (u toku) vođenje statusa po stavci */}
-          <Card>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Usluge</h2>
-            <ul className="mt-3 flex flex-col gap-3">
+          <div className="glass-soft rd-rise" style={{ padding: 20 }}>
+            <h2 style={{ ...sectionH, marginBottom: 12 }}>Usluge</h2>
+            <ul style={{ display: "flex", flexDirection: "column", gap: 10, margin: 0, padding: 0, listStyle: "none" }}>
               {services.map((s) => {
                 const dest =
                   s.servicerChoice === "own"
@@ -462,18 +445,14 @@ export default function DispatcherRequestDetailPage() {
                       ? `${s.partnerRef.name}, ${s.partnerRef.address}`
                       : "partner nije izabran";
                 return (
-                  <li key={s.id} className="rounded-lg border border-border-soft bg-bg-2 px-3 py-2.5 text-sm">
+                  <li key={s.id} style={{ borderRadius: 12, border: "1px solid var(--glass-line)", background: "rgba(255,255,255,0.03)", padding: "10px 12px", fontSize: 14 }}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-medium">
                         {SERVICE_TYPE_LABEL[s.type]}
                         {s.type === "other" && s.label ? `: ${s.label}` : ""}
                       </div>
                       {IN_PROGRESS.includes(status) ? (
-                        <select
-                          value={s.itemStatus ?? "pending"}
-                          onChange={(e) => handleItemStatus(s.id, e.target.value as ItemStatus)}
-                          className="input w-auto py-1 text-xs"
-                        >
+                        <select value={s.itemStatus ?? "pending"} onChange={(e) => handleItemStatus(s.id, e.target.value as ItemStatus)} className="input w-auto py-1 text-xs">
                           {(Object.keys(ITEM_STATUS_LABEL) as ItemStatus[]).map((k) => (
                             <option key={k} value={k}>
                               {ITEM_STATUS_LABEL[k]}
@@ -487,21 +466,16 @@ export default function DispatcherRequestDetailPage() {
                 );
               })}
             </ul>
-          </Card>
+          </div>
 
-          {/* DELIVERED → zatvori posao */}
           {status === "DELIVERED" ? (
-            <Button onClick={handleClose} loading={busy} className="self-start">
-              Zatvori posao
-            </Button>
+            <Button onClick={handleClose} loading={busy} className="self-start">Zatvori posao</Button>
           ) : null}
 
           {canCancel ? (
-            <div>
-              <Button variant="ghost" onClick={() => setShowCancel(true)}>
-                Otkaži posao
-              </Button>
-            </div>
+            <button onClick={() => setShowCancel(true)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: "var(--text-dim)", fontSize: 13.5, cursor: "pointer", padding: "4px 0" }}>
+              Otkaži posao
+            </button>
           ) : null}
         </div>
       </div>
@@ -520,15 +494,6 @@ export default function DispatcherRequestDetailPage() {
           setCancelError("");
         }}
       />
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4">
-      <span className="text-text-dim">{label}</span>
-      <span className="text-right">{value}</span>
     </div>
   );
 }

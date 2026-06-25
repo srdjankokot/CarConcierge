@@ -4,17 +4,18 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { SERVICE_TYPE_LABEL } from "@/lib/constants";
+import { SERVICE_TYPE_LABEL, requestIcon } from "@/lib/constants";
 import { DRIVER_ACTION, canRevert, type DriverNextStatus } from "@/lib/driver/flow";
 import { advanceJobStatusCallable, revertJobStatusCallable } from "@/lib/driver/api";
 import { mapError } from "@/lib/auth/errors";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { StatusStepper } from "@/components/ui/StatusStepper";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ArrowLeftIcon, SearchIcon } from "@/components/ui/icons";
+import { IconWell } from "@/components/redesign/IconWell";
+import { StatusPill } from "@/components/redesign/StatusPill";
+import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
 import { PhotoUploader } from "@/components/driver/PhotoUploader";
 import { Logistics } from "@/components/requests/Logistics";
 import type { CarRequest } from "@/types";
@@ -99,13 +100,16 @@ export default function DriverJobDetailPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            {vehicle.make} {vehicle.model} · {vehicle.year}
-          </h1>
-          {vehicle.plate ? <p className="font-mono text-xs text-text-faint">{vehicle.plate}</p> : null}
+        <div className="flex items-center gap-4">
+          <IconWell name={requestIcon(services)} accent />
+          <div>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, letterSpacing: "-.8px", margin: 0 }}>
+              {vehicle.make} {vehicle.model} · {vehicle.year}
+            </h1>
+            {vehicle.plate ? <p className="mt-1 font-mono text-xs text-text-faint">{vehicle.plate}</p> : null}
+          </div>
         </div>
-        <StatusBadge status={status} />
+        <StatusPill status={status} big />
       </div>
 
       {error ? (
@@ -117,7 +121,7 @@ export default function DriverJobDetailPage() {
         <div className="flex flex-col gap-6">
           <Card>
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-text-dim">Status</h2>
-            <StatusStepper status={status} />
+            <AnimatedStepper status={status} />
           </Card>
           <Card>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Klijent</h2>
@@ -196,7 +200,7 @@ export default function DriverJobDetailPage() {
 
       {/* Sticky akciona traka — uvek dostupna, bez skrolovanja */}
       {showBar ? (
-        <div className="sticky bottom-0 z-40 -mx-5 mt-2 border-t border-border-soft bg-bg/90 px-5 py-3 backdrop-blur">
+        <div className="sticky bottom-0 z-40 -mx-5 mt-2 border-t border-[color:var(--glass-line)] bg-[#0a110d]/85 px-5 py-3 backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center gap-2">
             {canRevert(status) ? (
               <Button variant="ghost" loading={reverting} onClick={revert} className="shrink-0">
