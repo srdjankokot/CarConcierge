@@ -17,7 +17,7 @@ export function RoleGuard({ role, children }: { role: Role; children: ReactNode 
   return (
     <div data-role={role} className="min-h-[100dvh]">
       <AppHeader />
-      <main className="mx-auto max-w-6xl px-5 py-8">{children}</main>
+      <main className="mx-auto max-w-[1040px] px-5 py-8">{children}</main>
     </div>
   );
 }
