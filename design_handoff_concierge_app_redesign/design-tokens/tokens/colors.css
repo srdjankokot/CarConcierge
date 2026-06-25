@@ -1,0 +1,51 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   COLORS — Auto Concierge
+   Deep forest-green surfaces, warm brass primary, mint "live" signal.
+   Taken 1:1 from the product (globals.css) and landing page.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Backgrounds — near-black greens, layered darkest → lightest */
+  --bg: #0d1410;          /* page background */
+  --bg-2: #111b15;        /* strip / inset panels */
+  --surface: #15211a;     /* cards, inputs-on-surface */
+  --surface-2: #1a2a21;   /* raised chips, icon wells */
+
+  /* Borders — low-contrast greens */
+  --border: #243a2d;      /* default hairline */
+  --border-soft: #1d2e24; /* softer divider */
+
+  /* Text — warm off-white stepping down to muted sage */
+  --text: #eef2ed;        /* primary text */
+  --text-dim: #9db0a3;    /* secondary / labels */
+  --text-faint: #6b8275;  /* tertiary / mono meta */
+
+  /* Brand */
+  --brass: #c9a86a;       /* primary accent — buttons, links, logo */
+  --brass-soft: #d8bd8a;  /* lighter brass — eyebrows, hover text */
+  --mint: #6fd3a3;        /* "live" / success signal */
+
+  /* Semantic */
+  --danger: #e26d6d;      /* errors, destructive */
+  --warn: #e0954a;        /* amber — rejected / cancelled */
+
+  /* Role accent — the ONLY thing that varies per app role.
+     Defaults to brass (client). Set --role-accent on a [data-role] wrapper. */
+  --role-accent: #c9a86a;
+}
+
+/* Per-role accent. Apply data-role to a layout wrapper to retint accents. */
+[data-role="client"]     { --role-accent: #c9a86a; } /* brass  */
+[data-role="dispatcher"] { --role-accent: #6fd3a3; } /* mint   */
+[data-role="driver"]     { --role-accent: #a78bfa; } /* violet */
+
+:root {
+  /* Semantic aliases — reach for these in components */
+  --text-body: var(--text);
+  --text-muted: var(--text-dim);
+  --surface-page: var(--bg);
+  --surface-card: var(--surface);
+  --surface-raised: var(--surface-2);
+  --border-default: var(--border);
+  --accent: var(--role-accent);
+  --on-accent: #11150f; /* text/icon color on a brass/accent fill */
+}

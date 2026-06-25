@@ -1,0 +1,32 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   EFFECTS — glassmorphism + gradients (the "redesign" visual layer).
+   Used by GlassCard, GlassButton, AnimatedStepper, LiveTracker and the
+   Concierge app kit. Backdrop-blur surfaces over the dark forest base.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Deepened app-shell base (a touch darker than --bg for more glow contrast) */
+  --bg-deep: #0a110d;
+
+  /* Frosted glass fills (translucent — sit them over the ambient glows) */
+  --glass: linear-gradient(155deg, rgba(28,46,36,0.62), rgba(15,24,19,0.52)); /* @kind other */
+  --glass-soft: linear-gradient(155deg, rgba(24,38,30,0.50), rgba(13,21,16,0.42)); /* @kind other */
+  --glass-border: rgba(216,189,138,0.14); /* warm brass-tinted hairline */
+  --glass-line: rgba(255,255,255,0.06);   /* neutral inner divider */
+
+  /* Brand gradients (CTAs, big numerals, signature accents) */
+  --brass-grad: linear-gradient(135deg, #e0c184, #c9a86a 55%, #a67f3d); /* @kind other */
+  --mint-grad: linear-gradient(135deg, #8fe7c0, #6fd3a3); /* @kind other */
+
+  /* Elevation for glass panels */
+  --shadow-glass: 0 24px 60px -28px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.05);
+  --shadow-brass: 0 8px 24px -6px rgba(201,168,106,0.5);
+
+  /* Standard radii for the glass layer (rounder than the base set) */
+  --radius-glass: 24px;
+  --radius-glass-soft: 20px;
+
+  /* Ambient drifting glows for app/marketing shells */
+  --ambient-brass: radial-gradient(circle, rgba(201,168,106,0.24), transparent 66%); /* @kind other */
+  --ambient-mint: radial-gradient(circle, rgba(111,211,163,0.16), transparent 64%); /* @kind other */
+  --ambient-violet: radial-gradient(circle, rgba(167,139,250,0.10), transparent 70%); /* @kind other */
+}

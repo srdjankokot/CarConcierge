@@ -21,6 +21,16 @@
   --brass-soft: #d8bd8a;
   --mint: #6fd3a3;
   --danger: #e26d6d;
+  --warn: #e0954a;
+
+  /* ── Redesign (glass / bento) ── */
+  --bg-deep: #0a110d;
+  --glass: linear-gradient(155deg, rgba(28, 46, 36, 0.62), rgba(15, 24, 19, 0.52));
+  --glass-soft: linear-gradient(155deg, rgba(24, 38, 30, 0.5), rgba(13, 21, 16, 0.42));
+  --glass-border: rgba(216, 189, 138, 0.14);
+  --glass-line: rgba(255, 255, 255, 0.06);
+  --brass-grad: linear-gradient(135deg, #e0c184, #c9a86a 55%, #a67f3d);
+  --mint-grad: linear-gradient(135deg, #8fe7c0, #6fd3a3);
 
   /* Podrazumevani akcent (pre nego što role-layout postavi svoj) = brass. */
   --role-accent: #c9a86a;
@@ -42,11 +52,12 @@
     scroll-behavior: smooth;
   }
   body {
-    background: var(--bg);
+    background: var(--bg-deep);
     color: var(--text);
     font-family: var(--font-body), system-ui, sans-serif;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
   h1,
   h2,
@@ -213,5 +224,245 @@
     font-weight: 700;
     font-size: 16px;
     font-family: var(--font-display), sans-serif;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REDESIGN (Valé) — glass / bento / motion. Vrednosti preuzete 1:1 iz
+   design_handoff_concierge_app_redesign (index.html + design-tokens).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Ambijentalni glow-ovi (iza svega) */
+.rd-ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.rd-ambient span {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.32;
+}
+.rd-ambient .g1 {
+  width: 600px;
+  height: 600px;
+  top: -360px;
+  right: -220px;
+  background: radial-gradient(circle, rgba(201, 168, 106, 0.24), transparent 66%);
+  animation: rd-drift1 22s ease-in-out infinite;
+}
+.rd-ambient .g2 {
+  width: 560px;
+  height: 560px;
+  bottom: -280px;
+  left: -180px;
+  background: radial-gradient(circle, rgba(111, 211, 163, 0.16), transparent 64%);
+  animation: rd-drift2 28s ease-in-out infinite;
+}
+.rd-ambient .g3 {
+  width: 420px;
+  height: 420px;
+  top: 55%;
+  left: 60%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.1), transparent 70%);
+  animation: rd-drift1 26s ease-in-out infinite reverse;
+}
+@keyframes rd-drift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 40px) scale(1.12); }
+}
+@keyframes rd-drift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, -40px) scale(1.1); }
+}
+
+/* Glass površine */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(125%);
+  -webkit-backdrop-filter: blur(22px) saturate(125%);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.glass-soft {
+  background: var(--glass-soft);
+  backdrop-filter: blur(16px) saturate(115%);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  border: 1px solid var(--glass-line);
+  border-radius: 20px;
+}
+
+/* Motion */
+.rd-rise {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: rd-rise 0.6s cubic-bezier(0.22, 0.9, 0.3, 1) forwards;
+}
+@keyframes rd-rise { to { opacity: 1; transform: none; } }
+.rd-fade {
+  opacity: 0;
+  animation: rd-fade 0.5s ease forwards;
+}
+@keyframes rd-fade { to { opacity: 1; } }
+.rd-pop { animation: rd-pop 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) forwards; }
+@keyframes rd-pop { from { transform: scale(0); } to { transform: scale(1); } }
+.rd-pulse { position: relative; }
+.rd-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--mint);
+  animation: rd-pulse 1.9s ease-out infinite;
+}
+@keyframes rd-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
+}
+.rd-shimmer { position: relative; overflow: hidden; }
+.rd-shimmer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: skewX(-18deg);
+  animation: rd-shimmer 3.6s ease-in-out infinite;
+}
+@keyframes rd-shimmer {
+  0%, 18% { left: -60%; }
+  38%, 100% { left: 130%; }
+}
+
+/* Dugmad */
+.rd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 13px 24px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: var(--brass-grad);
+  color: #1a130a;
+  box-shadow: 0 8px 24px -6px rgba(201, 168, 106, 0.5);
+  transition: transform 0.18s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.18s, filter 0.18s;
+}
+.rd-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -8px rgba(201, 168, 106, 0.62);
+  filter: brightness(1.04);
+}
+.rd-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+.rd-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.rd-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 13px 22px;
+  border-radius: 14px;
+  cursor: pointer;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+.rd-btn-ghost:hover:not(:disabled) {
+  border-color: var(--brass);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+.rd-btn-ghost:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Tabovi */
+.rd-tab {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 4px;
+  font-size: 14.5px;
+  color: var(--text-dim);
+  transition: color 0.2s;
+}
+.rd-tab.on { color: var(--text); }
+.rd-tab .ink {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--role-accent);
+  box-shadow: 0 0 10px var(--role-accent);
+}
+
+/* Hover na karticama */
+.rd-card-hover {
+  transition: transform 0.2s cubic-bezier(0.2, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+}
+.rd-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: var(--glass-border);
+  box-shadow: 0 28px 60px -28px rgba(0, 0, 0, 0.8);
+}
+
+/* Inputi */
+.rd-in {
+  width: 100%;
+  background: rgba(8, 14, 11, 0.6);
+  border: 1px solid var(--glass-line);
+  border-radius: 13px;
+  padding: 13px 15px;
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  font-size: 14.5px;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  outline: none;
+}
+.rd-in::placeholder { color: var(--text-faint); }
+.rd-in:focus {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 3px rgba(201, 168, 106, 0.14);
+  background: rgba(8, 14, 11, 0.8);
+}
+.rd-in-error { border-color: var(--danger); }
+.rd-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+  margin-bottom: 7px;
+  letter-spacing: 0.2px;
+}
+
+/* Brass-gradient tekst (veliki brojevi/cene) */
+.rd-grad-text {
+  background: var(--brass-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd-rise,
+  .rd-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
   }
 }

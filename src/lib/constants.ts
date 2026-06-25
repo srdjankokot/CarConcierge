@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/ui/Icon";
 import type { ItemStatus, RequestStatus, ServiceType } from "@/types";
 
 export const SERVICE_TYPE_LABEL: Record<ServiceType, string> = {
@@ -12,6 +13,29 @@ export const SERVICE_TYPE_LABEL: Record<ServiceType, string> = {
 export const SERVICE_TYPE_OPTIONS = (Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map(
   (value) => ({ value, label: SERVICE_TYPE_LABEL[value] }),
 );
+
+// Ikona po tipu usluge (redesign: IconWell-ovi, kartice, New Request toggle-ovi).
+export const SERVICE_TYPE_ICON: Record<ServiceType, IconName> = {
+  service: "wrench",
+  technical: "clipboard",
+  registration: "check",
+  tires: "tire",
+  wash: "wash",
+  other: "car",
+};
+
+// Ikona zahteva = ikona prve usluge.
+export function requestIcon(services?: { type: ServiceType }[]): IconName {
+  return SERVICE_TYPE_ICON[services?.[0]?.type ?? "other"] ?? "car";
+}
+
+// Boja status-pilule: mint za isporučeno/zatvoreno, warn za odbijeno/otkazano,
+// inače akcenat uloge.
+export function statusAccentVar(status: RequestStatus): string {
+  if (status === "DELIVERED" || status === "CLOSED") return "var(--mint)";
+  if (status === "REJECTED" || status === "CANCELLED") return "var(--warn)";
+  return "var(--role-accent)";
+}
 
 // Linearni tok za stepper (terminalni REJECTED/CANCELLED se prikazuju zasebno).
 export const STATUS_FLOW: RequestStatus[] = [

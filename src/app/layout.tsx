@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Sora } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { AmbientBackground } from "@/components/redesign/AmbientBackground";
 
 const sora = Sora({
   subsets: ["latin"],
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="sr" className={`${sora.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AmbientBackground />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <AuthProvider>{children}</AuthProvider>
+        </div>
       </body>
     </html>
   );
