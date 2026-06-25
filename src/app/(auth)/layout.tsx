@@ -22,5 +22,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     return <FullScreenLoader label="Učitavanje…" />;
   }
 
-  return <div className="auth-shell">{children}</div>;
+  return (
+    <div style={{ minHeight: "100dvh", display: "grid", placeItems: "center", padding: 24 }}>{children}</div>
+  );
 }

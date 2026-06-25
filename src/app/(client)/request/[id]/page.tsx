@@ -1,26 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { SERVICE_TYPE_LABEL, formatDateTime, formatRsd, isClientCancelable } from "@/lib/constants";
+import {
+  SERVICE_TYPE_LABEL,
+  formatDateTime,
+  formatRsd,
+  isClientCancelable,
+  requestIcon,
+} from "@/lib/constants";
 import {
   cancelRequestCallable,
   respondToOfferCallable,
   type OfferResponseAction,
 } from "@/lib/requests/api";
 import { mapError } from "@/lib/auth/errors";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Spinner } from "@/components/ui/Spinner";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { StatusStepper } from "@/components/ui/StatusStepper";
+import { Icon } from "@/components/ui/Icon";
+import { IconWell } from "@/components/redesign/IconWell";
+import { StatusPill } from "@/components/redesign/StatusPill";
+import { Chip } from "@/components/redesign/Chip";
+import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SearchIcon } from "@/components/ui/icons";
-import { Logistics } from "@/components/requests/Logistics";
 import { CommentsTimeline } from "@/components/requests/CommentsTimeline";
+import { Spinner } from "@/components/ui/Spinner";
 import type { CarRequest } from "@/types";
 
 type DialogKind = OfferResponseAction | "cancel" | null;
@@ -29,30 +34,19 @@ const DIALOG_META: Record<
   Exclude<DialogKind, null>,
   { title: string; description: string; confirmLabel: string; withReason: boolean }
 > = {
-  accept: {
-    title: "Prihvatiti ponudu?",
-    description: "Posao postaje aktivan i dispečer dodeljuje vozača.",
-    confirmLabel: "Prihvati",
-    withReason: false,
-  },
-  reject: {
-    title: "Odbiti ponudu?",
-    description: "Zahtev se zatvara kao odbijen.",
-    confirmLabel: "Odbij",
-    withReason: true,
-  },
-  request_change: {
-    title: "Tražiti izmenu ponude?",
-    description: "Zahtev se vraća dispečeru na doradu.",
-    confirmLabel: "Pošalji",
-    withReason: true,
-  },
-  cancel: {
-    title: "Otkazati zahtev?",
-    description: "Ova akcija se ne može opozvati.",
-    confirmLabel: "Otkaži zahtev",
-    withReason: true,
-  },
+  accept: { title: "Prihvatiti ponudu?", description: "Posao postaje aktivan i dispečer dodeljuje vozača.", confirmLabel: "Prihvati", withReason: false },
+  reject: { title: "Odbiti ponudu?", description: "Zahtev se zatvara kao odbijen.", confirmLabel: "Odbij", withReason: true },
+  request_change: { title: "Tražiti izmenu ponude?", description: "Zahtev se vraća dispečeru na doradu.", confirmLabel: "Pošalji", withReason: true },
+  cancel: { title: "Otkazati zahtev?", description: "Ova akcija se ne može opozvati.", confirmLabel: "Otkaži zahtev", withReason: true },
+};
+
+const sectionH: React.CSSProperties = {
+  fontSize: 12.5,
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: ".6px",
+  color: "var(--text-dim)",
+  margin: 0,
 };
 
 export default function ClientRequestDetailPage() {
@@ -62,7 +56,6 @@ export default function ClientRequestDetailPage() {
   const [request, setRequest] = useState<CarRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -72,11 +65,8 @@ export default function ClientRequestDetailPage() {
     const unsub = onSnapshot(
       doc(db, "requests", id),
       (snap) => {
-        if (!snap.exists()) {
-          setNotFound(true);
-        } else {
-          setRequest({ id: snap.id, ...(snap.data() as Omit<CarRequest, "id">) });
-        }
+        if (!snap.exists()) setNotFound(true);
+        else setRequest({ id: snap.id, ...(snap.data() as Omit<CarRequest, "id">) });
         setLoading(false);
       },
       () => {
@@ -92,11 +82,8 @@ export default function ClientRequestDetailPage() {
     setActionLoading(true);
     setActionError("");
     try {
-      if (dialog === "cancel") {
-        await cancelRequestCallable({ requestId: request.id, reason });
-      } else {
-        await respondToOfferCallable({ requestId: request.id, action: dialog, reason });
-      }
+      if (dialog === "cancel") await cancelRequestCallable({ requestId: request.id, reason });
+      else await respondToOfferCallable({ requestId: request.id, action: dialog, reason });
       setDialog(null);
     } catch (e) {
       setActionError(mapError(e));
@@ -107,126 +94,118 @@ export default function ClientRequestDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-16">
+      <div style={{ display: "flex", justifyContent: "center", padding: "64px 0" }}>
         <Spinner size={26} className="text-accent" />
       </div>
     );
   }
-
   if (notFound || !request) {
     return (
-      <EmptyState
-        icon={<SearchIcon className="h-7 w-7 text-accent" />}
-        title="Zahtev nije pronađen"
-        description="Možda je uklonjen ili nemate pristup."
-      />
+      <div className="glass" style={{ maxWidth: 600, margin: "0 auto", padding: 40, textAlign: "center" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 600 }}>Zahtev nije pronađen</h2>
+        <p style={{ color: "var(--text-dim)", fontSize: 14 }}>Možda je uklonjen ili nemate pristup.</p>
+      </div>
     );
   }
 
-  const { vehicle, services, offer, status } = request;
+  const { vehicle, pickup, services, offer, status } = request;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            {vehicle.make} {vehicle.model} · {vehicle.year}
-          </h1>
-          {vehicle.plate ? <p className="font-mono text-xs text-text-faint">{vehicle.plate}</p> : null}
+    <div style={{ maxWidth: 880, margin: "0 auto" }}>
+      <Link href="/home" className="rd-rise" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--text-dim)", fontSize: 14, marginBottom: 18 }}>
+        <Icon name="arrowLeft" size={16} /> Nazad
+      </Link>
+
+      <div className="rd-rise" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 14, marginBottom: 22, animationDelay: ".04s" }}>
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <IconWell name={requestIcon(services)} accent />
+          <div>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, letterSpacing: "-.8px", margin: 0 }}>
+              {vehicle.make} {vehicle.model} · {vehicle.year}
+            </h1>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
+              Preuzimanje {pickup.timeWindow.date} · {pickup.timeWindow.from}–{pickup.timeWindow.to}
+            </div>
+          </div>
         </div>
-        <StatusBadge status={status} />
+        <StatusPill status={status} big />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.4fr]">
-        <Card>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-text-dim">Status</h2>
-          <StatusStepper status={status} />
-        </Card>
+      {actionError && dialog === null ? (
+        <p style={{ color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>{actionError}</p>
+      ) : null}
 
-        <div className="flex flex-col gap-6">
-          {/* Ponuda */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.25fr_1fr]">
+        {/* Levo: tok zahteva */}
+        <div className="glass rd-rise" style={{ padding: 26, animationDelay: ".1s" }}>
+          <h2 style={{ ...sectionH, marginBottom: 18 }}>Tok zahteva</h2>
+          <AnimatedStepper status={status} />
+        </div>
+
+        {/* Desno */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Ponuda (kad je poslata) */}
           {status === "OFFER_SENT" && offer ? (
-            <Card className="border-accent/40">
-              <h2 className="text-lg font-semibold">Ponuda</h2>
-              <div className="mt-3 flex flex-col gap-2 text-sm">
-                <Row label="Predloženi termin" value={formatDateTime(offer.proposedTime)} />
-                <Row label="Cena prevoza" value={formatRsd(offer.transportPrice)} />
-                {offer.note ? <Row label="Napomena" value={offer.note} /> : null}
+            <div className="glass-soft rd-rise" style={{ padding: 22, animationDelay: ".14s", border: "1px solid color-mix(in srgb, var(--role-accent) 35%, transparent)" }}>
+              <h2 style={{ ...sectionH, marginBottom: 12 }}>Ponuda</h2>
+              <div className="rd-grad-text" style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 700, letterSpacing: "-1px" }}>
+                {formatRsd(offer.transportPrice)}
               </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Button onClick={() => setDialog("accept")}>Prihvati</Button>
-                <Button variant="ghost" onClick={() => setDialog("request_change")}>
-                  Traži izmenu
-                </Button>
-                <Button variant="ghost" onClick={() => setDialog("reject")}>
-                  Odbij
-                </Button>
+              <p style={{ fontSize: 12.5, color: "var(--text-dim)", margin: "6px 0 4px" }}>
+                Termin: {formatDateTime(offer.proposedTime)}
+              </p>
+              {offer.note ? <p style={{ fontSize: 12.5, color: "var(--text-dim)", margin: 0 }}>{offer.note}</p> : null}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
+                <button className="rd-btn" onClick={() => setDialog("accept")}>Prihvati</button>
+                <button className="rd-btn-ghost" onClick={() => setDialog("request_change")}>Traži izmenu</button>
+                <button className="rd-btn-ghost" onClick={() => setDialog("reject")}>Odbij</button>
               </div>
-            </Card>
-          ) : null}
+            </div>
+          ) : (
+            <div className="glass-soft rd-rise" style={{ padding: 22, animationDelay: ".14s" }}>
+              <h2 style={{ ...sectionH, marginBottom: 12 }}>Cena prevoza</h2>
+              <div className="rd-grad-text" style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 700, letterSpacing: "-1px" }}>
+                {offer ? formatRsd(offer.transportPrice) : "—"}
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-faint)", margin: "8px 0 0" }}>Uslugu plaćate direktno serviseru.</p>
+            </div>
+          )}
 
-          {/* Dodeljeni vozač */}
+          {/* Vozač */}
           {request.assignedDriver ? (
-            <Card>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Vozač</h2>
-              <p className="mt-2 text-sm font-medium">{request.assignedDriver.name}</p>
-              <a href={`tel:${request.assignedDriver.phone}`} className="font-mono text-sm text-accent">
+            <div className="glass-soft rd-rise" style={{ padding: 22, animationDelay: ".18s" }}>
+              <h2 style={{ ...sectionH, marginBottom: 8 }}>Vozač</h2>
+              <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.assignedDriver.name}</p>
+              <a href={`tel:${request.assignedDriver.phone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
                 {request.assignedDriver.phone}
               </a>
-            </Card>
+            </div>
           ) : null}
 
           {/* Usluge */}
-          <Card>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Usluge</h2>
-            <ul className="mt-3 flex flex-col gap-3">
-              {services.map((s) => {
-                const dest =
-                  s.servicerChoice === "own"
-                    ? s.ownServicer
-                      ? `${s.ownServicer.name}, ${s.ownServicer.address}`
-                      : "—"
-                    : s.partnerRef
-                      ? `${s.partnerRef.name}, ${s.partnerRef.address}`
-                      : "Predlog dispečera (čeka se ponuda)";
-                return (
-                  <li key={s.id} className="rounded-lg border border-border-soft bg-bg-2 px-3 py-2.5 text-sm">
-                    <div className="font-medium">
-                      {SERVICE_TYPE_LABEL[s.type]}
-                      {s.type === "other" && s.label ? `: ${s.label}` : ""}
-                    </div>
-                    <div className="text-text-dim">{dest}</div>
-                  </li>
-                );
-              })}
-            </ul>
-          </Card>
+          <div className="glass-soft rd-rise" style={{ padding: 22, animationDelay: ".22s" }}>
+            <h2 style={{ ...sectionH, marginBottom: 12 }}>Usluge</h2>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {services.map((s) => (
+                <Chip key={s.id}>{SERVICE_TYPE_LABEL[s.type]}</Chip>
+              ))}
+            </div>
+          </div>
 
-          {/* Logistika */}
-          <Card>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Logistika</h2>
-            <Logistics request={request} />
-          </Card>
-
-          <CommentsTimeline requestId={request.id!} />
-
-          {/* Foto (F4) */}
-          {request.photosBefore?.length || request.photosAfter?.length ? (
-            <Card>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Fotografije</h2>
-              <PhotoRow title="Pre" urls={request.photosBefore} />
-              <PhotoRow title="Posle" urls={request.photosAfter} />
-            </Card>
-          ) : null}
+          <button className="rd-btn-ghost rd-rise" style={{ animationDelay: ".26s" }} disabled>
+            <Icon name="headset" size={16} /> Kontakt dispečer
+          </button>
 
           {isClientCancelable(status) ? (
-            <div>
-              <Button variant="ghost" onClick={() => setDialog("cancel")}>
-                Otkaži zahtev
-              </Button>
-            </div>
+            <button className="rd-rise" onClick={() => setDialog("cancel")} style={{ animationDelay: ".3s", background: "none", border: "none", color: "var(--text-dim)", fontSize: 13.5, cursor: "pointer", padding: "4px 0" }}>
+              Otkaži zahtev
+            </button>
           ) : null}
         </div>
+      </div>
+
+      <div className="mt-4">
+        <CommentsTimeline requestId={request.id!} />
       </div>
 
       <ConfirmDialog
@@ -243,30 +222,6 @@ export default function ClientRequestDetailPage() {
           setActionError("");
         }}
       />
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4">
-      <span className="text-text-dim">{label}</span>
-      <span className="text-right">{value}</span>
-    </div>
-  );
-}
-
-function PhotoRow({ title, urls }: { title: string; urls?: string[] }) {
-  if (!urls?.length) return null;
-  return (
-    <div className="mt-3">
-      <div className="label">{title}</div>
-      <div className="flex flex-wrap gap-2">
-        {urls.map((u) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={u} src={u} alt={title} className="h-20 w-20 rounded-lg border border-border-soft object-cover" />
-        ))}
-      </div>
     </div>
   );
 }

@@ -7,9 +7,6 @@ import { auth } from "@/lib/firebase/client";
 import { registerSchema } from "@/lib/validation/auth";
 import { completeClientRegistrationCallable } from "@/lib/auth/callables";
 import { mapAuthError } from "@/lib/auth/errors";
-import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 type FieldErrors = Partial<Record<"fullName" | "email" | "phone" | "password", string>>;
@@ -21,15 +18,13 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   function update(field: keyof typeof values) {
-    return (e: React.ChangeEvent<HTMLInputElement>) =>
-      setValues((v) => ({ ...v, [field]: e.target.value }));
+    return (e: React.ChangeEvent<HTMLInputElement>) => setValues((v) => ({ ...v, [field]: e.target.value }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (submitting) return; // idempotentnost
+    if (submitting) return;
     setFormError("");
-
     const parsed = registerSchema.safeParse(values);
     if (!parsed.success) {
       const fe = parsed.error.flatten().fieldErrors;
@@ -46,90 +41,76 @@ export default function RegisterPage() {
     try {
       const cred = await createUserWithEmailAndPassword(auth, parsed.data.email, parsed.data.password);
       await updateProfile(cred.user, { displayName: parsed.data.fullName });
-      // Deterministički postavi role:'client' + fullName/phone (vidi completeClientRegistration).
-      await completeClientRegistrationCallable({
-        fullName: parsed.data.fullName,
-        phone: parsed.data.phone,
-      });
-      await cred.user.getIdToken(true); // osveži token sa novim claim-om
-      // (auth)/layout preusmerava na /home čim AuthProvider učita profil.
+      await completeClientRegistrationCallable({ fullName: parsed.data.fullName, phone: parsed.data.phone });
+      await cred.user.getIdToken(true);
     } catch (err) {
       setFormError(mapAuthError(err));
       setSubmitting(false);
     }
   }
 
+  const FIELDS: { key: keyof typeof values; label: string; type?: string; autoComplete?: string; placeholder?: string }[] = [
+    { key: "fullName", label: "Ime i prezime", autoComplete: "name" },
+    { key: "email", label: "Email", type: "email", autoComplete: "email" },
+    { key: "phone", label: "Telefon", type: "tel", autoComplete: "tel", placeholder: "06x xxx xxxx" },
+    { key: "password", label: "Lozinka", type: "password", autoComplete: "new-password" },
+  ];
+
   return (
-    <div className="w-full max-w-[420px]">
-      <div className="mb-7 flex items-center gap-3">
-        <span className="brand-mark">A</span>
-        <span className="font-display text-lg font-bold tracking-tight">Auto Concierge</span>
+    <div className="rd-rise" style={{ width: "100%", maxWidth: 420 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginBottom: 24 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/vale-mark.png" alt="Valé" style={{ width: 140, maxWidth: "60%", height: "auto", display: "block" }} />
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 30, letterSpacing: "-1px", lineHeight: 1 }}>
+          Valé
+        </div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, letterSpacing: "3px", color: "var(--text-faint)" }}>
+          PREMIUM CAR CONCIERGE
+        </div>
       </div>
 
-      <Card>
-        <h1 className="text-xl font-semibold">Otvorite nalog</h1>
-        <p className="mt-1 text-sm text-text-dim">
+      <div className="glass" style={{ padding: 30 }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 25, fontWeight: 700, letterSpacing: "-.6px", margin: "0 0 4px" }}>
+          Otvorite nalog
+        </h1>
+        <p style={{ color: "var(--text-dim)", fontSize: 14, margin: "0 0 22px" }}>
           Zakažite preuzimanje i pratite status od početka do kraja.
         </p>
 
-        <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-4">
-          <Input
-            label="Ime i prezime"
-            autoComplete="name"
-            value={values.fullName}
-            onChange={update("fullName")}
-            error={fieldErrors.fullName}
-          />
-          <Input
-            label="Email"
-            type="email"
-            autoComplete="email"
-            value={values.email}
-            onChange={update("email")}
-            error={fieldErrors.email}
-          />
-          <Input
-            label="Telefon"
-            type="tel"
-            inputMode="tel"
-            placeholder="06x xxx xxxx"
-            autoComplete="tel"
-            value={values.phone}
-            onChange={update("phone")}
-            error={fieldErrors.phone}
-          />
-          <Input
-            label="Lozinka"
-            type="password"
-            autoComplete="new-password"
-            value={values.password}
-            onChange={update("password")}
-            error={fieldErrors.password}
-          />
+        <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {FIELDS.map((f) => (
+            <div key={f.key}>
+              <span className="rd-label">{f.label}</span>
+              <input
+                className={`rd-in${fieldErrors[f.key] ? " rd-in-error" : ""}`}
+                type={f.type ?? "text"}
+                autoComplete={f.autoComplete}
+                placeholder={f.placeholder}
+                value={values[f.key]}
+                onChange={update(f.key)}
+              />
+              {fieldErrors[f.key] ? <p className="field-error">{fieldErrors[f.key]}</p> : null}
+            </div>
+          ))}
 
-          {formError ? (
-            <p className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
-              {formError}
-            </p>
-          ) : null}
+          {formError ? <p style={{ color: "var(--danger)", fontSize: 13, margin: 0 }}>{formError}</p> : null}
 
-          <Button type="submit" fullWidth loading={submitting}>
-            Otvori nalog
-          </Button>
+          <button type="submit" className="rd-btn rd-shimmer" style={{ width: "100%", marginTop: 4 }} disabled={submitting}>
+            {submitting ? "Kreiranje…" : "Otvori nalog"}
+          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-faint)", fontSize: 12, margin: "2px 0" }}>
+            <span style={{ flex: 1, height: 1, background: "var(--glass-line)" }} /> ili
+            <span style={{ flex: 1, height: 1, background: "var(--glass-line)" }} />
+          </div>
+
+          <OAuthButtons onError={setFormError} />
         </form>
+      </div>
 
-        <div className="my-5 flex items-center gap-3 text-xs text-text-faint">
-          <span className="h-px flex-1 bg-border-soft" />
-          ili
-          <span className="h-px flex-1 bg-border-soft" />
-        </div>
-
-        <OAuthButtons onError={setFormError} />
-      </Card>
-
-      <p className="mt-5 text-center text-sm text-text-dim">
+      <p style={{ textAlign: "center", color: "var(--text-faint)", fontSize: 13, marginTop: 18 }}>
         Već imate nalog?{" "}
-        <Link href="/login" className="text-brass-soft hover:underline">
+        <Link href="/login" style={{ color: "var(--brass-soft)" }}>
           Prijavite se
         </Link>
       </p>

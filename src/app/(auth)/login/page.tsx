@@ -6,9 +6,6 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { loginSchema } from "@/lib/validation/auth";
 import { mapAuthError } from "@/lib/auth/errors";
-import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 export default function LoginPage() {
@@ -20,9 +17,8 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (submitting) return; // idempotentnost: nema dvostrukog slanja
+    if (submitting) return;
     setFormError("");
-
     const parsed = loginSchema.safeParse({ email, password });
     if (!parsed.success) {
       const fe = parsed.error.flatten().fieldErrors;
@@ -33,7 +29,6 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, parsed.data.email, parsed.data.password);
-      // Preusmeravanje radi (auth)/layout kad AuthProvider učita ulogu.
     } catch (err) {
       setFormError(mapAuthError(err));
       setSubmitting(false);
@@ -41,58 +36,71 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full max-w-[400px]">
-      <div className="mb-7 flex items-center gap-3">
-        <span className="brand-mark">A</span>
-        <span className="font-display text-lg font-bold tracking-tight">Auto Concierge</span>
+    <div className="rd-rise" style={{ width: "100%", maxWidth: 400 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginBottom: 26 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/vale-mark.png" alt="Valé" style={{ width: 168, maxWidth: "70%", height: "auto", display: "block" }} />
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 34, letterSpacing: "-1px", lineHeight: 1 }}>
+          Valé
+        </div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, letterSpacing: "3px", color: "var(--text-faint)" }}>
+          PREMIUM CAR CONCIERGE
+        </div>
       </div>
 
-      <Card>
-        <h1 className="text-xl font-semibold">Prijava</h1>
-        <p className="mt-1 text-sm text-text-dim">Dobrodošli nazad.</p>
+      <div className="glass" style={{ padding: 30 }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 25, fontWeight: 700, letterSpacing: "-.6px", margin: "0 0 4px" }}>
+          Dobro došli nazad
+        </h1>
+        <p style={{ color: "var(--text-dim)", fontSize: 14, margin: "0 0 22px" }}>
+          Pristupite svojim zahtevima i poslovima.
+        </p>
 
-        <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-4">
-          <Input
-            label="Email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={fieldErrors.email}
-          />
-          <Input
-            label="Lozinka"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={fieldErrors.password}
-          />
+        <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <span className="rd-label">Email</span>
+            <input
+              className={`rd-in${fieldErrors.email ? " rd-in-error" : ""}`}
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {fieldErrors.email ? <p className="field-error">{fieldErrors.email}</p> : null}
+          </div>
+          <div>
+            <span className="rd-label">Lozinka</span>
+            <input
+              className={`rd-in${fieldErrors.password ? " rd-in-error" : ""}`}
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {fieldErrors.password ? <p className="field-error">{fieldErrors.password}</p> : null}
+          </div>
 
           {formError ? (
-            <p className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
-              {formError}
-            </p>
+            <p style={{ color: "var(--danger)", fontSize: 13, margin: 0 }}>{formError}</p>
           ) : null}
 
-          <Button type="submit" fullWidth loading={submitting}>
-            Prijavi se
-          </Button>
+          <button type="submit" className="rd-btn rd-shimmer" style={{ width: "100%", marginTop: 4 }} disabled={submitting}>
+            {submitting ? "Prijavljivanje…" : "Prijavi se"}
+          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-faint)", fontSize: 12, margin: "2px 0" }}>
+            <span style={{ flex: 1, height: 1, background: "var(--glass-line)" }} /> ili
+            <span style={{ flex: 1, height: 1, background: "var(--glass-line)" }} />
+          </div>
+
+          <OAuthButtons onError={setFormError} />
         </form>
+      </div>
 
-        <div className="my-5 flex items-center gap-3 text-xs text-text-faint">
-          <span className="h-px flex-1 bg-border-soft" />
-          ili
-          <span className="h-px flex-1 bg-border-soft" />
-        </div>
-
-        <OAuthButtons onError={setFormError} />
-      </Card>
-
-      <p className="mt-5 text-center text-sm text-text-dim">
+      <p style={{ textAlign: "center", color: "var(--text-faint)", fontSize: 13, marginTop: 18 }}>
         Nemate nalog?{" "}
-        <Link href="/register" className="text-brass-soft hover:underline">
-          Registrujte se
+        <Link href="/register" style={{ color: "var(--brass-soft)" }}>
+          Registracija
         </Link>
       </p>
     </div>
