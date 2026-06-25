@@ -91,10 +91,21 @@ export function NotificationsBell() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative text-text-dim transition-colors hover:text-text"
         aria-label="Obaveštenja"
+        style={{
+          position: "relative",
+          width: 38,
+          height: 38,
+          borderRadius: 12,
+          display: "grid",
+          placeItems: "center",
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid var(--glass-line)",
+          color: "var(--brass)",
+          cursor: "pointer",
+        }}
       >
-        <BellIcon className="h-5 w-5" />
+        <BellIcon className="h-[18px] w-[18px]" />
         {unread > 0 ? (
           <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-semibold text-[#11150f]">
             {unread > 9 ? "9+" : unread}
@@ -105,7 +116,7 @@ export function NotificationsBell() {
       {open ? (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] overflow-hidden rounded-card border border-border bg-surface shadow-soft">
+          <div className="glass absolute right-0 z-50 mt-2 w-80 max-w-[90vw] overflow-hidden">
             <div className="flex items-center justify-between border-b border-border-soft px-4 py-2.5">
               <span className="text-sm font-semibold">Obaveštenja</span>
               {unread > 0 ? (
