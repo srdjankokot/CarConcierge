@@ -116,7 +116,7 @@ export default function DriverJobDetailPage() {
         <p className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.4fr]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[260px_1fr]">
         {/* LEVO: status + klijent */}
         <div className="flex flex-col gap-6">
           <Card>

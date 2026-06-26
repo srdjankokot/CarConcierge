@@ -287,7 +287,7 @@ export default function DispatcherRequestDetailPage() {
 
       {error ? <p style={{ color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>{error}</p> : null}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.25fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[260px_1fr]">
         {/* LEVO: tok zahteva */}
         <div className="glass rd-rise" style={{ padding: 26, animationDelay: ".1s" }}>
           <h2 style={{ ...sectionH, marginBottom: 18 }}>Tok zahteva</h2>
