@@ -11,6 +11,7 @@ import { mapError } from "@/lib/auth/errors";
 import { Icon } from "@/components/ui/Icon";
 import { Dropdown, type DropdownOption } from "@/components/redesign/Dropdown";
 import { BrandLogo } from "@/components/redesign/BrandLogo";
+import { LocationPicker, type LocationValue } from "@/components/redesign/LocationPicker";
 import type { ServiceType } from "@/types";
 
 const SERVICE_OPTS = (Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((value) => ({
@@ -33,7 +34,9 @@ export default function NewRequestPage() {
   const [modelText, setModelText] = useState("");
   const [godiste, setGodiste] = useState("");
   const [picked, setPicked] = useState<ServiceType[]>(["tires"]);
-  const [address, setAddress] = useState("");
+  const [pickup, setPickup] = useState<LocationValue>({ address: "" });
+  const [sameDropoff, setSameDropoff] = useState(true);
+  const [dropoff, setDropoff] = useState<LocationValue>({ address: "" });
   const [date, setDate] = useState(todayStr());
   const [termin, setTermin] = useState(0);
   const [error, setError] = useState("");
@@ -50,6 +53,7 @@ export default function NewRequestPage() {
     { value: "Drugo", label: "Drugo…" },
   ];
   const yearOptions: DropdownOption[] = VEHICLE_YEARS.map((y) => ({ value: String(y), label: String(y) }));
+  const terminOptions: DropdownOption[] = TERMINI.map((t, i) => ({ value: String(i), label: `${t.from}–${t.to}` }));
 
   function toggle(s: ServiceType) {
     setPicked((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]));
@@ -63,11 +67,27 @@ export default function NewRequestPage() {
     const effModel = make === "Drugo" || model === "Drugo" ? modelText.trim() : model;
     const t = TERMINI[termin];
 
+    const pickupPayload: { address: string; lat?: number; lng?: number; timeWindow: { date: string; from: string; to: string } } = {
+      address: pickup.address.trim(),
+      timeWindow: { date, from: t.from, to: t.to },
+    };
+    if (typeof pickup.lat === "number") pickupPayload.lat = pickup.lat;
+    if (typeof pickup.lng === "number") pickupPayload.lng = pickup.lng;
+
+    let dropoffPayload: { sameAsPickup: boolean; address?: string; lat?: number; lng?: number };
+    if (sameDropoff) {
+      dropoffPayload = { sameAsPickup: true };
+    } else {
+      dropoffPayload = { sameAsPickup: false, address: dropoff.address.trim() };
+      if (typeof dropoff.lat === "number") dropoffPayload.lat = dropoff.lat;
+      if (typeof dropoff.lng === "number") dropoffPayload.lng = dropoff.lng;
+    }
+
     const payload = {
       vehicle: { make: effMake, model: effModel, year: Number(godiste) },
       services: picked.map((type) => ({ type, servicerChoice: "suggest" as const })),
-      pickup: { address: address.trim(), timeWindow: { date, from: t.from, to: t.to } },
-      dropoff: { sameAsPickup: true },
+      pickup: pickupPayload,
+      dropoff: dropoffPayload,
     };
 
     const parsed = createRequestInputSchema.safeParse(payload);
@@ -189,7 +209,25 @@ export default function NewRequestPage() {
 
           <div>
             <span className="rd-label">Adresa preuzimanja</span>
-            <input className="rd-in" placeholder="Ulica i broj, Novi Sad" value={address} onChange={(e) => setAddress(e.target.value)} />
+            <LocationPicker value={pickup} onChange={setPickup} placeholder="Pretražite adresu preuzimanja…" />
+          </div>
+
+          <div>
+            <label style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", fontSize: 14, color: "var(--text-dim)" }}>
+              <input
+                type="checkbox"
+                checked={sameDropoff}
+                onChange={(e) => setSameDropoff(e.target.checked)}
+                style={{ width: 16, height: 16, accentColor: "var(--brass)" }}
+              />
+              Vraćanje na istu adresu
+            </label>
+            {!sameDropoff ? (
+              <div style={{ marginTop: 12 }}>
+                <span className="rd-label">Adresa vraćanja</span>
+                <LocationPicker value={dropoff} onChange={setDropoff} placeholder="Pretražite adresu vraćanja…" />
+              </div>
+            ) : null}
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -199,13 +237,7 @@ export default function NewRequestPage() {
             </div>
             <div>
               <span className="rd-label">Termin</span>
-              <select className="rd-in" value={termin} onChange={(e) => setTermin(Number(e.target.value))}>
-                {TERMINI.map((t, i) => (
-                  <option key={i} value={i}>
-                    {t.from}–{t.to}
-                  </option>
-                ))}
-              </select>
+              <Dropdown value={String(termin)} onChange={(v) => setTermin(Number(v))} options={terminOptions} />
             </div>
           </div>
 

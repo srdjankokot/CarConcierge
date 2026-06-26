@@ -33,6 +33,7 @@ import { IconWell } from "@/components/redesign/IconWell";
 import { StatusPill } from "@/components/redesign/StatusPill";
 import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
 import { PhotoGallery } from "@/components/redesign/PhotoGallery";
+import { PartnerDistance } from "@/components/redesign/PartnerDistance";
 import { Logistics } from "@/components/requests/Logistics";
 import { CommentsTimeline } from "@/components/requests/CommentsTimeline";
 import { cn } from "@/lib/utils";
@@ -336,15 +337,21 @@ export default function DispatcherRequestDetailPage() {
                       ))}
                     </div>
                     {s.servicerChoice === "suggest" ? (
-                      <Select
-                        label="Partner"
-                        value={s.partnerId}
-                        onChange={(e) => patchOfferService(idx, { partnerId: e.target.value })}
-                        options={[
-                          { value: "", label: "— Izaberi partnera —" },
-                          ...partners.filter((p) => p.isActive !== false && (p.serviceTypes ?? []).includes(s.type)).map((p) => ({ value: p.id!, label: `${p.name} (${p.address})` })),
-                        ]}
-                      />
+                      <>
+                        <Select
+                          label="Partner"
+                          value={s.partnerId}
+                          onChange={(e) => patchOfferService(idx, { partnerId: e.target.value })}
+                          options={[
+                            { value: "", label: "— Izaberi partnera —" },
+                            ...partners.filter((p) => p.isActive !== false && (p.serviceTypes ?? []).includes(s.type)).map((p) => ({ value: p.id!, label: `${p.name} (${p.address})` })),
+                          ]}
+                        />
+                        {(() => {
+                          const sel = partners.find((p) => p.id === s.partnerId);
+                          return sel ? <PartnerDistance request={request} partnerAddress={sel.address} /> : null;
+                        })()}
+                      </>
                     ) : (
                       <div className="text-sm text-text-dim">
                         {s.ownName || "—"}

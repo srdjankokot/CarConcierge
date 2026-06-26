@@ -71,7 +71,7 @@ export default function ClientHomePage() {
             {dateLabel}
           </div>
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 700, letterSpacing: "-1px", margin: 0 }}>
-            Zdravo{firstName ? `, ${firstName}` : ""} 👋
+            Zdravo{firstName ? `, ${firstName}` : ""}
           </h1>
         </div>
         <Link href="/new" className="rd-btn">

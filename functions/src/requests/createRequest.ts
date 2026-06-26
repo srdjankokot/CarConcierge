@@ -27,6 +27,23 @@ export const createRequest = onCall({ region: REGION }, async (req) => {
 
   const dropoffAddress = data.dropoff.sameAsPickup ? data.pickup.address : data.dropoff.address;
 
+  // pickup/dropoff sa koordinatama (izostavi undefined — Firestore ga ne prima).
+  const pickup: { address: string; lat?: number; lng?: number; timeWindow: typeof data.pickup.timeWindow } = {
+    address: data.pickup.address,
+    timeWindow: data.pickup.timeWindow,
+  };
+  if (typeof data.pickup.lat === "number") pickup.lat = data.pickup.lat;
+  if (typeof data.pickup.lng === "number") pickup.lng = data.pickup.lng;
+
+  const dropoff: { sameAsPickup: boolean; address: string; lat?: number; lng?: number } = {
+    sameAsPickup: data.dropoff.sameAsPickup,
+    address: dropoffAddress ?? data.pickup.address,
+  };
+  const dropLat = data.dropoff.sameAsPickup ? data.pickup.lat : data.dropoff.lat;
+  const dropLng = data.dropoff.sameAsPickup ? data.pickup.lng : data.dropoff.lng;
+  if (typeof dropLat === "number") dropoff.lat = dropLat;
+  if (typeof dropLng === "number") dropoff.lng = dropLng;
+
   // Snapshot kontakta klijenta (dispečer ga vidi bez dodatnog čitanja).
   const profile = (await db.doc(`users/${req.auth.uid}`).get()).data();
 
@@ -36,8 +53,8 @@ export const createRequest = onCall({ region: REGION }, async (req) => {
     clientPhone: profile?.phone ?? "",
     status: "CREATED",
     vehicle: data.vehicle,
-    pickup: { address: data.pickup.address, timeWindow: data.pickup.timeWindow },
-    dropoff: { sameAsPickup: data.dropoff.sameAsPickup, address: dropoffAddress },
+    pickup,
+    dropoff,
     services,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),

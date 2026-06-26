@@ -74,10 +74,17 @@ export const createRequestInputSchema = z.object({
   services: z.array(serviceItemInputSchema).min(1, "Dodajte bar jednu uslugu."),
   pickup: z.object({
     address: z.string().trim().min(5, "Adresa preuzimanja je obavezna").max(160),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
     timeWindow: timeWindowInputSchema,
   }),
   dropoff: z
-    .object({ sameAsPickup: z.boolean(), address: z.string().trim().max(160).optional() })
+    .object({
+      sameAsPickup: z.boolean(),
+      address: z.string().trim().max(160).optional(),
+      lat: z.number().optional(),
+      lng: z.number().optional(),
+    })
     .refine((d) => d.sameAsPickup || (!!d.address && d.address.length >= 5), {
       message: "Unesite adresu vraćanja.",
       path: ["address"],

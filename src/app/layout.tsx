@@ -24,11 +24,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Auto Concierge",
+  title: "Valé",
   description: "Concierge servis za vozila — Novi Sad",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Concierge" },
-  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
+  icons: { icon: "/icons/favicon-32.png", apple: "/icons/favicon-32.png" },
 };
 
 export const viewport: Viewport = {
