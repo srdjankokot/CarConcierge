@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SERVICE_TYPE_ICON, SERVICE_TYPE_LABEL } from "@/lib/constants";
+import { VEHICLE_MAKES, VEHICLE_YEARS } from "@/lib/vehicles";
 import { createRequestInputSchema, todayStr } from "@/lib/validation/request";
 import { createRequestCallable } from "@/lib/requests/api";
 import { mapError } from "@/lib/auth/errors";
@@ -24,7 +25,10 @@ const TERMINI = [
 
 export default function NewRequestPage() {
   const router = useRouter();
-  const [vozilo, setVozilo] = useState("");
+  const [make, setMake] = useState("");
+  const [makeText, setMakeText] = useState("");
+  const [model, setModel] = useState("");
+  const [modelText, setModelText] = useState("");
   const [godiste, setGodiste] = useState("");
   const [picked, setPicked] = useState<ServiceType[]>(["tires"]);
   const [address, setAddress] = useState("");
@@ -32,6 +36,8 @@ export default function NewRequestPage() {
   const [termin, setTermin] = useState(0);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const modelsForMake = VEHICLE_MAKES.find((m) => m.make === make)?.models ?? [];
 
   function toggle(s: ServiceType) {
     setPicked((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]));
@@ -41,13 +47,12 @@ export default function NewRequestPage() {
     if (submitting) return;
     setError("");
 
-    const parts = vozilo.trim().split(/\s+/);
-    const make = parts[0] || vozilo.trim();
-    const model = parts.slice(1).join(" ") || make;
+    const effMake = make === "Drugo" ? makeText.trim() : make;
+    const effModel = make === "Drugo" || model === "Drugo" ? modelText.trim() : model;
     const t = TERMINI[termin];
 
     const payload = {
-      vehicle: { make, model, year: Number(godiste) },
+      vehicle: { make: effMake, model: effModel, year: Number(godiste) },
       services: picked.map((type) => ({ type, servicerChoice: "suggest" as const })),
       pickup: { address: address.trim(), timeWindow: { date, from: t.from, to: t.to } },
       dropoff: { sameAsPickup: true },
@@ -70,11 +75,7 @@ export default function NewRequestPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
-      <Link
-        href="/home"
-        className="rd-rise"
-        style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--text-dim)", fontSize: 14, marginBottom: 18 }}
-      >
+      <Link href="/home" className="rd-rise" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--text-dim)", fontSize: 14, marginBottom: 18 }}>
         <Icon name="arrowLeft" size={16} /> Nazad
       </Link>
 
@@ -89,16 +90,69 @@ export default function NewRequestPage() {
 
       <div className="glass rd-rise" style={{ padding: 26, animationDelay: ".1s" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Vozilo: marka + godište, pa model */}
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
             <div>
-              <span className="rd-label">Vozilo</span>
-              <input className="rd-in" placeholder="npr. Mercedes C200" value={vozilo} onChange={(e) => setVozilo(e.target.value)} />
+              <span className="rd-label">Marka</span>
+              <select
+                className="rd-in"
+                value={make}
+                onChange={(e) => {
+                  setMake(e.target.value);
+                  setModel("");
+                  setModelText("");
+                }}
+              >
+                <option value="">— Izaberi marku —</option>
+                {VEHICLE_MAKES.map((m) => (
+                  <option key={m.make} value={m.make}>
+                    {m.make}
+                  </option>
+                ))}
+                <option value="Drugo">Drugo…</option>
+              </select>
             </div>
             <div>
               <span className="rd-label">Godište</span>
-              <input className="rd-in" type="number" inputMode="numeric" placeholder="2020" value={godiste} onChange={(e) => setGodiste(e.target.value)} />
+              <select className="rd-in" value={godiste} onChange={(e) => setGodiste(e.target.value)}>
+                <option value="">—</option>
+                {VEHICLE_YEARS.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+
+          {make === "Drugo" ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <span className="rd-label">Marka (upiši)</span>
+                <input className="rd-in" placeholder="npr. Cupra" value={makeText} onChange={(e) => setMakeText(e.target.value)} />
+              </div>
+              <div>
+                <span className="rd-label">Model</span>
+                <input className="rd-in" placeholder="npr. Formentor" value={modelText} onChange={(e) => setModelText(e.target.value)} />
+              </div>
+            </div>
+          ) : make ? (
+            <div>
+              <span className="rd-label">Model</span>
+              <select className="rd-in" value={model} onChange={(e) => setModel(e.target.value)}>
+                <option value="">— Izaberi model —</option>
+                {modelsForMake.map((md) => (
+                  <option key={md} value={md}>
+                    {md}
+                  </option>
+                ))}
+                <option value="Drugo">Drugo…</option>
+              </select>
+              {model === "Drugo" ? (
+                <input className="rd-in" style={{ marginTop: 10 }} placeholder="Upišite model" value={modelText} onChange={(e) => setModelText(e.target.value)} />
+              ) : null}
+            </div>
+          ) : null}
 
           <div>
             <span className="rd-label">Usluge</span>
