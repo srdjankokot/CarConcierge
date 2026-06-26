@@ -23,6 +23,7 @@ import { IconWell } from "@/components/redesign/IconWell";
 import { StatusPill } from "@/components/redesign/StatusPill";
 import { Chip } from "@/components/redesign/Chip";
 import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
+import { PhotoGallery } from "@/components/redesign/PhotoGallery";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CommentsTimeline } from "@/components/requests/CommentsTimeline";
 import { Spinner } from "@/components/ui/Spinner";
@@ -124,7 +125,7 @@ export default function ClientRequestDetailPage() {
               {vehicle.make} {vehicle.model} · {vehicle.year}
             </h1>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
-              Preuzimanje {pickup.timeWindow.date} · {pickup.timeWindow.from}–{pickup.timeWindow.to}
+              {vehicle.plate ? `${vehicle.plate} · ` : ""}Preuzimanje {pickup.timeWindow.date} · {pickup.timeWindow.from}–{pickup.timeWindow.to}
             </div>
           </div>
         </div>
@@ -191,6 +192,14 @@ export default function ClientRequestDetailPage() {
               ))}
             </div>
           </div>
+
+          {/* Fotografije PRE/POSLE */}
+          {request.photosBefore?.length || request.photosAfter?.length ? (
+            <div className="glass-soft rd-rise" style={{ padding: 22, animationDelay: ".24s" }}>
+              <h2 style={{ ...sectionH, marginBottom: 12 }}>Fotografije</h2>
+              <PhotoGallery before={request.photosBefore} after={request.photosAfter} />
+            </div>
+          ) : null}
 
           <button className="rd-btn-ghost rd-rise" style={{ animationDelay: ".26s" }} disabled>
             <Icon name="headset" size={16} /> Kontakt dispečer

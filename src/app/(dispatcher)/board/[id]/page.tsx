@@ -32,6 +32,7 @@ import { Icon } from "@/components/ui/Icon";
 import { IconWell } from "@/components/redesign/IconWell";
 import { StatusPill } from "@/components/redesign/StatusPill";
 import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
+import { PhotoGallery } from "@/components/redesign/PhotoGallery";
 import { Logistics } from "@/components/requests/Logistics";
 import { CommentsTimeline } from "@/components/requests/CommentsTimeline";
 import { cn } from "@/lib/utils";
@@ -277,7 +278,7 @@ export default function DispatcherRequestDetailPage() {
               {vehicle.make} {vehicle.model} · {vehicle.year}
             </h1>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
-              Preuzimanje {pickup.timeWindow.date} · {pickup.timeWindow.from}–{pickup.timeWindow.to}
+              {vehicle.plate ? `${vehicle.plate} · ` : ""}Preuzimanje {pickup.timeWindow.date} · {pickup.timeWindow.from}–{pickup.timeWindow.to}
             </div>
           </div>
         </div>
@@ -316,6 +317,13 @@ export default function DispatcherRequestDetailPage() {
               <a href={`tel:${request.assignedDriver.phone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
                 {request.assignedDriver.phone}
               </a>
+            </div>
+          ) : null}
+
+          {request.photosBefore?.length || request.photosAfter?.length ? (
+            <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".24s" }}>
+              <h2 style={{ ...sectionH, marginBottom: 12 }}>Fotografije</h2>
+              <PhotoGallery before={request.photosBefore} after={request.photosAfter} />
             </div>
           ) : null}
 
