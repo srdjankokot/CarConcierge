@@ -98,7 +98,7 @@ export default function DriverJobDetailPage() {
   const showBar = !!action || canRevert(status);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-4">
+    <div className="mx-auto flex max-w-[880px] flex-col gap-6 pb-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <IconWell name={requestIcon(services)} accent />
@@ -201,7 +201,7 @@ export default function DriverJobDetailPage() {
       {/* Sticky akciona traka — uvek dostupna, bez skrolovanja */}
       {showBar ? (
         <div className="sticky bottom-0 z-40 -mx-5 mt-2 border-t border-[color:var(--glass-line)] bg-[#0a110d]/85 px-5 py-3 backdrop-blur">
-          <div className="mx-auto flex max-w-3xl items-center gap-2">
+          <div className="mx-auto flex max-w-[880px] items-center gap-2">
             {canRevert(status) ? (
               <Button variant="ghost" loading={reverting} onClick={revert} className="shrink-0">
                 <ArrowLeftIcon className="h-4 w-4" />
@@ -221,7 +221,7 @@ export default function DriverJobDetailPage() {
             ) : null}
           </div>
           {blockedByPhoto ? (
-            <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-text-faint">
+            <p className="mx-auto mt-2 max-w-[880px] text-center text-xs text-text-faint">
               Dodajte fotografiju da nastavite.
             </p>
           ) : null}
