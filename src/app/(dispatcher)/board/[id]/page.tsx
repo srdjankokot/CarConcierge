@@ -265,7 +265,7 @@ export default function DispatcherRequestDetailPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+    <div style={{ maxWidth: 880, margin: "0 auto" }}>
       <Link href="/board" className="rd-rise" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--text-dim)", fontSize: 14, marginBottom: 18 }}>
         <Icon name="arrowLeft" size={16} /> Nazad
       </Link>
@@ -287,50 +287,14 @@ export default function DispatcherRequestDetailPage() {
 
       {error ? <p style={{ color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>{error}</p> : null}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.55fr]">
-        {/* LEVO: status + info */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div className="glass rd-rise" style={{ padding: 24, animationDelay: ".1s" }}>
-            <h2 style={{ ...sectionH, marginBottom: 18 }}>Tok zahteva</h2>
-            <AnimatedStepper status={status} />
-          </div>
-
-          <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".14s" }}>
-            <h2 style={{ ...sectionH, marginBottom: 8 }}>Klijent</h2>
-            <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.clientName || "—"}</p>
-            {request.clientPhone ? (
-              <a href={`tel:${request.clientPhone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
-                {request.clientPhone}
-              </a>
-            ) : null}
-          </div>
-
-          <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".18s" }}>
-            <h2 style={{ ...sectionH }}>Logistika</h2>
-            <Logistics request={request} />
-          </div>
-
-          {request.assignedDriver ? (
-            <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".22s" }}>
-              <h2 style={{ ...sectionH, marginBottom: 8 }}>Vozač</h2>
-              <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.assignedDriver.name}</p>
-              <a href={`tel:${request.assignedDriver.phone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
-                {request.assignedDriver.phone}
-              </a>
-            </div>
-          ) : null}
-
-          {request.photosBefore?.length || request.photosAfter?.length ? (
-            <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".24s" }}>
-              <h2 style={{ ...sectionH, marginBottom: 12 }}>Fotografije</h2>
-              <PhotoGallery before={request.photosBefore} after={request.photosAfter} />
-            </div>
-          ) : null}
-
-          <CommentsTimeline requestId={request.id!} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.25fr_1fr]">
+        {/* LEVO: tok zahteva */}
+        <div className="glass rd-rise" style={{ padding: 26, animationDelay: ".1s" }}>
+          <h2 style={{ ...sectionH, marginBottom: 18 }}>Tok zahteva</h2>
+          <AnimatedStepper status={status} />
         </div>
 
-        {/* DESNO: akcije */}
+        {/* DESNO: akcije pa info (kao kod klijenta) */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {status === "CREATED" && request.changeRequestNote ? (
             <div className="glass-soft rd-rise" style={{ padding: 20, border: "1px solid color-mix(in srgb, var(--warn) 45%, transparent)", background: "color-mix(in srgb, var(--warn) 8%, transparent)" }}>
@@ -408,7 +372,7 @@ export default function DispatcherRequestDetailPage() {
 
           {/* Ponuda (read-only) za OFFER_SENT i kasnije */}
           {offer && status !== "CREATED" ? (
-            <div className="glass-soft rd-rise" style={{ padding: 20, animationDelay: ".1s" }}>
+            <div className="glass-soft rd-rise" style={{ padding: 20 }}>
               <h2 style={{ ...sectionH, marginBottom: 12 }}>Ponuda</h2>
               <div className="rd-grad-text" style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 700, letterSpacing: "-1px" }}>
                 {formatRsd(offer.transportPrice)}
@@ -439,7 +403,24 @@ export default function DispatcherRequestDetailPage() {
             </div>
           ) : null}
 
-          {/* Usluge + (u toku) vođenje statusa po stavci */}
+          {/* Klijent */}
+          <div className="glass-soft rd-rise" style={{ padding: 20 }}>
+            <h2 style={{ ...sectionH, marginBottom: 8 }}>Klijent</h2>
+            <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.clientName || "—"}</p>
+            {request.clientPhone ? (
+              <a href={`tel:${request.clientPhone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
+                {request.clientPhone}
+              </a>
+            ) : null}
+          </div>
+
+          {/* Logistika */}
+          <div className="glass-soft rd-rise" style={{ padding: 20 }}>
+            <h2 style={sectionH}>Logistika</h2>
+            <Logistics request={request} />
+          </div>
+
+          {/* Usluge + vođenje statusa po stavci */}
           <div className="glass-soft rd-rise" style={{ padding: 20 }}>
             <h2 style={{ ...sectionH, marginBottom: 12 }}>Usluge</h2>
             <ul style={{ display: "flex", flexDirection: "column", gap: 10, margin: 0, padding: 0, listStyle: "none" }}>
@@ -475,6 +456,27 @@ export default function DispatcherRequestDetailPage() {
               })}
             </ul>
           </div>
+
+          {/* Vozač */}
+          {request.assignedDriver ? (
+            <div className="glass-soft rd-rise" style={{ padding: 20 }}>
+              <h2 style={{ ...sectionH, marginBottom: 8 }}>Vozač</h2>
+              <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{request.assignedDriver.name}</p>
+              <a href={`tel:${request.assignedDriver.phone}`} style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--role-accent)" }}>
+                {request.assignedDriver.phone}
+              </a>
+            </div>
+          ) : null}
+
+          {/* Fotografije PRE/POSLE */}
+          {request.photosBefore?.length || request.photosAfter?.length ? (
+            <div className="glass-soft rd-rise" style={{ padding: 20 }}>
+              <h2 style={{ ...sectionH, marginBottom: 12 }}>Fotografije</h2>
+              <PhotoGallery before={request.photosBefore} after={request.photosAfter} />
+            </div>
+          ) : null}
+
+          <CommentsTimeline requestId={request.id!} />
 
           {status === "DELIVERED" ? (
             <Button onClick={handleClose} loading={busy} className="self-start">Zatvori posao</Button>
