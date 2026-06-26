@@ -102,8 +102,8 @@ export default function NewRequestPage() {
 
       <div className="glass rd-rise" style={{ padding: 26, animationDelay: ".1s" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {/* Vozilo: marka + godište, pa model */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
+          {/* Vozilo: marka / model / godište u jednoj liniji */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.1fr_1.1fr_0.8fr]">
             <div>
               <span className="rd-label">Marka</span>
               <Dropdown
@@ -114,8 +114,18 @@ export default function NewRequestPage() {
                   setModelText("");
                 }}
                 options={makeOptions}
-                placeholder="— Izaberi marku —"
+                placeholder="— Marka —"
                 searchable
+              />
+            </div>
+            <div>
+              <span className="rd-label">Model</span>
+              <Dropdown
+                value={model}
+                onChange={setModel}
+                options={modelOptions}
+                placeholder="— Model —"
+                disabled={!make || make === "Drugo"}
               />
             </div>
             <div>
@@ -125,23 +135,20 @@ export default function NewRequestPage() {
           </div>
 
           {make === "Drugo" ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <span className="rd-label">Marka (upiši)</span>
                 <input className="rd-in" placeholder="npr. Cupra" value={makeText} onChange={(e) => setMakeText(e.target.value)} />
               </div>
               <div>
-                <span className="rd-label">Model</span>
+                <span className="rd-label">Model (upiši)</span>
                 <input className="rd-in" placeholder="npr. Formentor" value={modelText} onChange={(e) => setModelText(e.target.value)} />
               </div>
             </div>
-          ) : make ? (
+          ) : model === "Drugo" ? (
             <div>
-              <span className="rd-label">Model</span>
-              <Dropdown value={model} onChange={setModel} options={modelOptions} placeholder="— Izaberi model —" />
-              {model === "Drugo" ? (
-                <input className="rd-in" style={{ marginTop: 10 }} placeholder="Upišite model" value={modelText} onChange={(e) => setModelText(e.target.value)} />
-              ) : null}
+              <span className="rd-label">Model (upiši)</span>
+              <input className="rd-in" placeholder="Upišite model" value={modelText} onChange={(e) => setModelText(e.target.value)} />
             </div>
           ) : null}
 
