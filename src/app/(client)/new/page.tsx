@@ -9,6 +9,8 @@ import { createRequestInputSchema, todayStr } from "@/lib/validation/request";
 import { createRequestCallable } from "@/lib/requests/api";
 import { mapError } from "@/lib/auth/errors";
 import { Icon } from "@/components/ui/Icon";
+import { Dropdown, type DropdownOption } from "@/components/redesign/Dropdown";
+import { BrandLogo } from "@/components/redesign/BrandLogo";
 import type { ServiceType } from "@/types";
 
 const SERVICE_OPTS = (Object.keys(SERVICE_TYPE_LABEL) as ServiceType[]).map((value) => ({
@@ -38,6 +40,16 @@ export default function NewRequestPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const modelsForMake = VEHICLE_MAKES.find((m) => m.make === make)?.models ?? [];
+
+  const makeOptions: DropdownOption[] = [
+    ...VEHICLE_MAKES.map((m) => ({ value: m.make, label: m.make, icon: <BrandLogo make={m.make} size={24} /> })),
+    { value: "Drugo", label: "Drugo…", icon: <BrandLogo make="Drugo" size={24} /> },
+  ];
+  const modelOptions: DropdownOption[] = [
+    ...modelsForMake.map((md) => ({ value: md, label: md })),
+    { value: "Drugo", label: "Drugo…" },
+  ];
+  const yearOptions: DropdownOption[] = VEHICLE_YEARS.map((y) => ({ value: String(y), label: String(y) }));
 
   function toggle(s: ServiceType) {
     setPicked((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]));
@@ -94,34 +106,21 @@ export default function NewRequestPage() {
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
             <div>
               <span className="rd-label">Marka</span>
-              <select
-                className="rd-in"
+              <Dropdown
                 value={make}
-                onChange={(e) => {
-                  setMake(e.target.value);
+                onChange={(v) => {
+                  setMake(v);
                   setModel("");
                   setModelText("");
                 }}
-              >
-                <option value="">— Izaberi marku —</option>
-                {VEHICLE_MAKES.map((m) => (
-                  <option key={m.make} value={m.make}>
-                    {m.make}
-                  </option>
-                ))}
-                <option value="Drugo">Drugo…</option>
-              </select>
+                options={makeOptions}
+                placeholder="— Izaberi marku —"
+                searchable
+              />
             </div>
             <div>
               <span className="rd-label">Godište</span>
-              <select className="rd-in" value={godiste} onChange={(e) => setGodiste(e.target.value)}>
-                <option value="">—</option>
-                {VEHICLE_YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+              <Dropdown value={godiste} onChange={setGodiste} options={yearOptions} placeholder="—" />
             </div>
           </div>
 
@@ -139,15 +138,7 @@ export default function NewRequestPage() {
           ) : make ? (
             <div>
               <span className="rd-label">Model</span>
-              <select className="rd-in" value={model} onChange={(e) => setModel(e.target.value)}>
-                <option value="">— Izaberi model —</option>
-                {modelsForMake.map((md) => (
-                  <option key={md} value={md}>
-                    {md}
-                  </option>
-                ))}
-                <option value="Drugo">Drugo…</option>
-              </select>
+              <Dropdown value={model} onChange={setModel} options={modelOptions} placeholder="— Izaberi model —" />
               {model === "Drugo" ? (
                 <input className="rd-in" style={{ marginTop: 10 }} placeholder="Upišite model" value={modelText} onChange={(e) => setModelText(e.target.value)} />
               ) : null}
