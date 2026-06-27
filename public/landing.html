@@ -3,552 +3,569 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Valé — Prepustite nam brigu o vozilu</title>
-<meta name="description" content="Valé preuzima vaše vozilo sa adrese, vodi ga na servis, tehnički, gume ili pranje i vraća nazad. Sve zakazujete i pratite kroz aplikaciju.">
-<meta property="og:title" content="Valé — Prepustite nam brigu o vozilu">
-<meta property="og:description" content="Zakažite preuzimanje, pratite status uživo, primite vozilo nazad. Novi Sad.">
+<title>Valé — Vaše vozilo, naša briga</title>
+<meta name="description" content="Valé preuzima vaše vozilo sa adrese, vodi ga na servis, tehnički, gume ili pranje i vraća nazad. Vi odobravate svaku ponudu i pratite svaki korak — uz foto dokaz pre i posle. Novi Sad.">
+<meta property="og:title" content="Valé — Vaše vozilo, naša briga">
+<meta property="og:description" content="Servis, tehnički i gume bez čekanja. Preuzimamo, vodimo i vraćamo — vi odobravate i pratite svaki korak. Novi Sad.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#0d1410">
+<meta name="theme-color" content="#0a110d">
+<link rel="icon" href="/icons/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d1410;
-    --bg-2: #111b15;
-    --surface: #15211a;
-    --surface-2: #1a2a21;
-    --border: #243a2d;
-    --border-soft: #1d2e24;
+    --font-display: "Sora", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --text: #eef2ed;
     --text-dim: #9db0a3;
     --text-faint: #6b8275;
     --brass: #c9a86a;
     --brass-soft: #d8bd8a;
     --mint: #6fd3a3;
-    --display: 'Sora', system-ui, sans-serif;
-    --body: 'Inter', system-ui, sans-serif;
-    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --warn: #e0954a;
+    --bg-deep: #0a110d;
+    --glass: linear-gradient(155deg, rgba(28,46,36,0.62), rgba(15,24,19,0.52));
+    --glass-soft: linear-gradient(155deg, rgba(24,38,30,0.50), rgba(13,21,16,0.42));
+    --glass-border: rgba(216,189,138,0.14);
+    --glass-line: rgba(255,255,255,0.06);
+    --brass-grad: linear-gradient(135deg, #e0c184, #c9a86a 55%, #a67f3d);
+    --mint-grad: linear-gradient(135deg, #8fe7c0, #6fd3a3);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--bg);
+    background: var(--bg-deep);
     color: var(--text);
-    font-family: var(--body);
-    line-height: 1.6;
-    font-size: 16px;
-    -webkit-font-smoothing: antialiased;
+    font-family: var(--font-body);
+    line-height: 1.55;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; text-decoration: none; }
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+  ::selection { background: rgba(201,168,106,0.3); }
 
-  /* ---------- NAV ---------- */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(13,20,16,0.82);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border-soft);
-  }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
-  .logo { display: flex; align-items: center; gap: 11px; font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: -0.3px; }
-  .logo .mark {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--brass), #a07e3f);
-    display: grid; place-items: center; color: #1a130a; font-weight: 700; font-size: 16px;
-    box-shadow: 0 2px 12px rgba(201,168,106,0.25);
-  }
-  .nav-links { display: flex; align-items: center; gap: 30px; }
-  .nav-links a { color: var(--text-dim); font-size: 14.5px; font-weight: 450; transition: color .18s; }
-  .nav-links a:hover { color: var(--text); }
-  .nav-cta {
-    background: var(--brass); color: #1a130a !important; font-weight: 600;
-    padding: 9px 18px; border-radius: 9px; font-size: 14.5px;
-    transition: transform .15s, box-shadow .15s;
-  }
-  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,106,0.3); }
-  .menu-btn { display: none; background: none; border: none; color: var(--text); cursor: pointer; }
+  /* Ambient glow */
+  .amb { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .amb span { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .amb .g1 { width: 540px; height: 540px; top: -160px; left: -120px; background: radial-gradient(circle, rgba(201,168,106,0.16), transparent 70%); }
+  .amb .g2 { width: 620px; height: 620px; top: 280px; right: -200px; background: radial-gradient(circle, rgba(111,211,163,0.12), transparent 70%); }
+  .amb .g3 { width: 500px; height: 500px; bottom: -160px; left: 30%; background: radial-gradient(circle, rgba(201,168,106,0.10), transparent 70%); }
 
-  /* ---------- HERO ---------- */
-  .hero { position: relative; padding: 88px 0 72px; overflow: hidden; }
-  .hero::before {
-    content: ''; position: absolute; inset: 0;
-    background:
-      radial-gradient(900px 420px at 78% -8%, rgba(201,168,106,0.10), transparent 60%),
-      radial-gradient(700px 500px at 8% 30%, rgba(111,211,163,0.06), transparent 55%);
-    pointer-events: none;
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; position: relative; z-index: 1; }
+
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(120%);
+    -webkit-backdrop-filter: blur(20px) saturate(120%);
+    border: 1px solid var(--glass-border);
+    border-radius: 22px;
   }
-  .hero-grid { position: relative; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+  .glass-soft {
+    background: var(--glass-soft);
+    backdrop-filter: blur(14px) saturate(115%);
+    -webkit-backdrop-filter: blur(14px) saturate(115%);
+    border: 1px solid var(--glass-line);
+    border-radius: 18px;
+  }
+
   .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--mono); font-size: 12.5px; font-weight: 500;
-    color: var(--brass-soft); letter-spacing: 0.5px;
-    border: 1px solid var(--border); background: var(--surface);
-    padding: 6px 13px; border-radius: 20px; margin-bottom: 26px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--brass-soft);
   }
-  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 8px var(--mint); }
-  h1 {
-    font-family: var(--display); font-weight: 700; font-size: clamp(38px, 5.4vw, 60px);
-    line-height: 1.04; letter-spacing: -1.6px; margin-bottom: 22px;
+  h2.section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(26px, 4vw, 36px);
+    letter-spacing: -0.8px;
+    line-height: 1.1;
+    margin: 12px 0 0;
   }
-  h1 .accent { color: var(--brass); }
-  .hero p.lead { font-size: 18.5px; color: var(--text-dim); max-width: 480px; margin-bottom: 32px; line-height: 1.6; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .section-sub { color: var(--text-dim); font-size: 15.5px; max-width: 560px; margin: 14px auto 0; }
+
   .btn-primary {
-    background: var(--brass); color: #1a130a; font-weight: 600; font-size: 15.5px;
-    padding: 14px 26px; border-radius: 11px;
-    transition: transform .15s, box-shadow .15s;
-    box-shadow: 0 4px 20px rgba(201,168,106,0.22);
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--font-body); font-weight: 600; font-size: 15px;
+    padding: 14px 24px; border-radius: 14px; border: none; cursor: pointer;
+    background: var(--brass-grad); color: #1a130a;
+    box-shadow: 0 0 22px -4px rgba(201,168,106,0.5);
+    transition: transform .2s cubic-bezier(.2,1,.3,1), box-shadow .2s, filter .2s;
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(201,168,106,0.34); }
+  .btn-primary:hover { box-shadow: 0 0 34px -3px rgba(201,168,106,0.62); filter: brightness(1.06); }
   .btn-ghost {
-    border: 1px solid var(--border); color: var(--text); font-weight: 500; font-size: 15.5px;
-    padding: 14px 24px; border-radius: 11px; background: var(--surface);
-    transition: border-color .15s, background .15s;
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--font-body); font-weight: 500; font-size: 15px;
+    padding: 14px 22px; border-radius: 14px; cursor: pointer;
+    color: var(--text); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+    transition: border-color .2s, background .2s, transform .2s;
   }
-  .btn-ghost:hover { border-color: var(--brass); background: var(--surface-2); }
+  .btn-ghost:hover { border-color: var(--brass); background: rgba(255,255,255,0.07); }
 
-  /* ---------- HERO SIGNATURE: live status panel ---------- */
-  .status-panel {
-    background: linear-gradient(165deg, var(--surface), var(--bg-2));
-    border: 1px solid var(--border);
-    border-radius: 18px; padding: 22px;
-    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
-    position: relative;
+  /* NAV */
+  nav { position: sticky; top: 14px; z-index: 50; margin-top: 14px; }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 62px; padding: 0 12px 0 18px;
   }
-  .sp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--border-soft); }
-  .sp-car { display: flex; align-items: center; gap: 12px; }
-  .sp-car .ic { width: 40px; height: 40px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; font-size: 19px; }
-  .sp-car .t1 { font-weight: 600; font-size: 14.5px; }
-  .sp-car .t2 { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); }
-  .sp-live { font-family: var(--mono); font-size: 11px; color: var(--mint); display: flex; align-items: center; gap: 6px; }
-  .sp-live .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); animation: pulse 1.8s infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(111,211,163,0.5); } 50% { opacity: .6; box-shadow: 0 0 0 5px rgba(111,211,163,0); } }
-  .timeline { display: flex; flex-direction: column; gap: 2px; }
-  .tl-step { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; position: relative; }
-  .tl-rail { display: flex; flex-direction: column; align-items: center; }
-  .tl-node { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); flex-shrink: 0; margin-top: 3px; z-index: 1; }
-  .tl-line { width: 2px; flex: 1; background: var(--border); min-height: 22px; }
-  .tl-step.done .tl-node { background: var(--mint); border-color: var(--mint); box-shadow: 0 0 10px rgba(111,211,163,0.4); }
-  .tl-step.done .tl-line { background: var(--mint); }
-  .tl-step.active .tl-node { background: var(--brass); border-color: var(--brass); box-shadow: 0 0 0 4px rgba(201,168,106,0.18); }
-  .tl-body .s1 { font-weight: 550; font-size: 14px; }
-  .tl-step.pending .tl-body .s1 { color: var(--text-faint); }
-  .tl-body .s2 { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
-  .tl-step.active .tl-body .s2 { color: var(--brass-soft); }
-
-  /* ---------- STATS STRIP ---------- */
-  .strip { border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); background: var(--bg-2); }
-  .strip-inner { display: grid; grid-template-columns: repeat(3,1fr); }
-  .stat { padding: 30px 24px; text-align: center; border-right: 1px solid var(--border-soft); }
-  .stat:last-child { border-right: none; }
-  .stat .n { font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--brass); letter-spacing: -1px; }
-  .stat .l { font-size: 13.5px; color: var(--text-dim); margin-top: 4px; }
-
-  /* ---------- SECTIONS ---------- */
-  section.block { padding: 84px 0; }
-  .sec-eyebrow { font-family: var(--mono); font-size: 12.5px; color: var(--brass-soft); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
-  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 3.5vw, 38px); letter-spacing: -1px; line-height: 1.1; max-width: 620px; }
-  .sec-sub { color: var(--text-dim); font-size: 16.5px; max-width: 560px; margin-top: 14px; }
-
-  /* steps */
-  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 48px; }
-  .step { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 24px; position: relative; transition: border-color .2s, transform .2s; }
-  .step:hover { border-color: var(--border); transform: translateY(-3px); }
-  .step .num { font-family: var(--mono); font-size: 13px; color: var(--brass); font-weight: 600; }
-  .step h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 14px 0 8px; letter-spacing: -0.3px; }
-  .step p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
-
-  /* SVG ikonice — moderni line set */
-  .ico { width: 22px; height: 22px; stroke: var(--brass); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .svc .ico { width: 26px; height: 26px; }
-  .ico-wrap { width: 48px; height: 48px; border-radius: 12px; background: rgba(201,168,106,0.10); border: 1px solid var(--border-soft); display: grid; place-items: center; margin-bottom: 16px; transition: background .2s, border-color .2s; }
-  .svc:hover .ico-wrap { background: rgba(201,168,106,0.16); border-color: var(--brass); }
-
-  /* services */
-  .services { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
-  .svc { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 26px; transition: border-color .2s, background .2s; }
-  .svc:hover { border-color: var(--brass); background: var(--surface-2); }
-  .svc h3 { font-family: var(--display); font-size: 17px; font-weight: 600; margin-bottom: 7px; }
-  .svc p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
-
-  /* slike automobila */
-  .hero-photo { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6); background: var(--surface); }
-  .car-frame { width: 100%; aspect-ratio: 16 / 10; background: linear-gradient(160deg,#2a3a32,#141f18); border-bottom: 1px solid var(--border); overflow: hidden; }
-  .car-photo { width: 100%; height: 100%; object-fit: cover; object-position: center 60%; display: block; }
-  .hero-photo .float-status {
-    z-index: 2; background: var(--surface); padding: 16px 18px;
+  .logo { display: inline-flex; align-items: center; gap: 11px; font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -0.3px; }
+  .logo img { width: 34px; height: 34px; object-fit: contain; display: block; }
+  .nav-links { display: flex; align-items: center; gap: 26px; }
+  .nav-links a.nl { font-size: 14px; color: var(--text-dim); transition: color .15s; }
+  .nav-links a.nl:hover { color: var(--text); }
+  .nav-cta { display: inline-flex; align-items: center; gap: 8px; }
+  .nav-login { font-size: 14px; color: var(--text-dim); }
+  .nav-login:hover { color: var(--text); }
+  .nav-book {
+    font-size: 14px; font-weight: 600; padding: 9px 16px; border-radius: 11px;
+    background: var(--brass-grad); color: #1a130a;
   }
-  .float-status .sp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border-soft); }
-  .float-status .timeline { gap: 0; }
-  .float-status .tl-step { padding: 7px 0; }
-  .float-status .tl-line { min-height: 16px; }
-  .section-photo { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 24px 50px -24px rgba(0,0,0,0.6); background: var(--bg-2); aspect-ratio: 3 / 2; }
-  .section-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .usluge-head { display: grid; grid-template-columns: 1fr 0.85fr; gap: 40px; align-items: end; }
-  @media (max-width: 900px) { .usluge-head { grid-template-columns: 1fr; } .usluge-head .section-photo { display: none; } }
 
-  /* digital differentiator */
-  .digital { background: linear-gradient(160deg, var(--bg-2), var(--bg)); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
-  .dig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-  .dig-list { list-style: none; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
-  .dig-list li { display: flex; gap: 14px; align-items: flex-start; }
-  .dig-list .chk { width: 26px; height: 26px; border-radius: 8px; background: rgba(111,211,163,0.12); color: var(--mint); display: grid; place-items: center; flex-shrink: 0; font-size: 14px; font-weight: 700; }
-  .dig-list .dt { font-weight: 600; font-size: 15.5px; }
-  .dig-list .dd { font-size: 14px; color: var(--text-dim); }
-  .phone-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 18px;
-    box-shadow: 0 40px 80px -30px rgba(0,0,0,0.7);
+  /* HERO */
+  .hero { padding: clamp(56px, 9vw, 110px) 0 70px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(34px, 5.4vw, 56px); line-height: 1.04; letter-spacing: -1.5px;
+    margin: 16px 0 0;
   }
-  .pc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 4px 6px; }
-  .pc-top .t { font-weight: 600; font-size: 14px; }
-  .pc-top .badge { font-family: var(--mono); font-size: 10.5px; background: rgba(111,211,163,0.12); color: var(--mint); padding: 4px 9px; border-radius: 6px; }
-  .pc-row { display: flex; gap: 12px; align-items: center; padding: 13px; background: var(--bg-2); border-radius: 12px; margin-bottom: 9px; border: 1px solid var(--border-soft); }
-  .pc-row .ic { width: 38px; height: 38px; border-radius: 9px; background: var(--surface-2); display: grid; place-items: center; font-size: 17px; }
-  .pc-row .m1 { font-weight: 550; font-size: 13.5px; }
-  .pc-row .m2 { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); }
-  .pc-row .stat-tag { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 5px; }
-  .stat-tag.done { background: rgba(111,211,163,0.12); color: var(--mint); }
-  .stat-tag.prog { background: rgba(201,168,106,0.14); color: var(--brass-soft); }
+  .hero h1 .grad {
+    background: var(--brass-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { color: var(--text-dim); font-size: 17px; line-height: 1.6; margin: 20px 0 0; max-width: 520px; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+  .hero-note { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 13px; color: var(--text-faint); }
+  .hero-note .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 8px var(--mint); }
 
-  /* trust */
-  .trust-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
-  .trust { padding: 24px; border-left: 2px solid var(--brass); background: var(--surface); border-radius: 0 12px 12px 0; }
-  .trust h3 { font-family: var(--display); font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-  .trust p { font-size: 14px; color: var(--text-dim); line-height: 1.55; }
+  /* Hero mock card */
+  .mock-stack { position: relative; width: 100%; max-width: 400px; margin-left: auto; }
+  .mock { padding: 22px; position: relative; z-index: 2; animation: mfloat1 6.5s ease-in-out infinite; }
+  .mock2 { position: absolute; left: -34px; bottom: -48px; width: 234px; padding: 18px; z-index: 1; box-shadow: 0 30px 60px -28px rgba(0,0,0,0.7); animation: mfloat2 8s ease-in-out infinite; }
+  .m2-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; color: var(--text-faint); }
+  .m2-price { font-family: var(--font-display); font-weight: 700; font-size: 27px; letter-spacing: -1px; margin-top: 7px; background: var(--brass-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .m2-price span { font-size: 13px; }
+  .m2-sub { font-size: 11.5px; color: var(--text-dim); margin-top: 4px; }
+  .m2-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .m2-accept { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 9px; background: var(--brass-grad); color: #1a130a; }
+  .m2-ghost { font-size: 12px; padding: 7px 13px; border-radius: 9px; color: var(--text-dim); background: rgba(255,255,255,0.05); border: 1px solid var(--glass-line); }
+  @keyframes mfloat1 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes mfloat2 { 0%,100% { transform: translateY(0) rotate(-2.5deg); } 50% { transform: translateY(7px) rotate(-2.5deg); } }
+  .mock-top { display: flex; align-items: center; gap: 13px; }
+  .iwell { width: 48px; height: 48px; border-radius: 13px; display: grid; place-items: center; color: #1a130a; background: var(--brass-grad); flex-shrink: 0; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: 999px; color: var(--mint); background: color-mix(in srgb, var(--mint) 13%, transparent); border: 1px solid color-mix(in srgb, var(--mint) 32%, transparent); }
+  .pill .pdot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 8px var(--mint); }
+  .pill { transition: color .3s, background .3s, border-color .3s; }
+  .pill.brass { color: var(--brass-soft); background: color-mix(in srgb, var(--brass) 13%, transparent); border-color: color-mix(in srgb, var(--brass) 32%, transparent); }
+  .pill.brass .pdot { background: var(--brass); box-shadow: 0 0 8px var(--brass); }
+  .hero-sub { font-size: 12.5px; color: var(--text-dim); margin-top: 13px; min-height: 17px; }
+  .hero-sub b { color: var(--text); font-weight: 600; }
+  /* live-tracker (isto kao u aplikaciji) */
+  .lt { display: flex; align-items: center; margin: 22px 0 4px; }
+  .lt-stop { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+  .lt-dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .lt-dot.done { background: var(--mint); box-shadow: 0 0 10px rgba(111,211,163,0.5); }
+  .lt-dot.active { background: var(--brass-grad); animation: lt-pulse 1.9s ease-in-out infinite; }
+  @keyframes lt-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(201,168,106,0.45); } 60% { box-shadow: 0 0 0 6px rgba(201,168,106,0); } }
+  .lt-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); white-space: nowrap; }
+  .lt-lbl.done { color: var(--mint); }
+  .lt-lbl.active { color: var(--brass-soft); }
+  .lt-line { flex: 1; height: 2px; margin: 0 6px 18px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  .lt-fill { display: block; height: 100%; width: 0; background: var(--mint-grad); transition: width .6s ease; }
+  .mock-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-family: var(--font-mono); font-size: 10.5px; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--text-faint); border: 1px solid var(--glass-line); }
+
+  /* TRUST STRIP */
+  .trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px; }
+  .trust .item { padding: 22px 20px; }
+  .trust .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: var(--brass); background: rgba(201,168,106,0.12); margin-bottom: 14px; }
+  .trust h3 { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+  .trust p { color: var(--text-dim); font-size: 13.5px; margin-top: 7px; line-height: 1.5; }
+
+  section.block { padding: clamp(60px, 9vw, 96px) 0; }
+  .center { text-align: center; }
+
+  /* STEPS */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 46px; }
+  .step { padding: 24px 22px; position: relative; }
+  .step .num { font-family: var(--font-mono); font-size: 12px; color: var(--brass); border: 1px solid var(--glass-border); width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: rgba(201,168,106,0.08); }
+  .step h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin-top: 16px; }
+  .step p { color: var(--text-dim); font-size: 13.5px; margin-top: 8px; line-height: 1.5; }
+
+  /* SERVICES */
+  .services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 46px; }
+  .svc { padding: 22px; display: flex; align-items: center; gap: 14px; transition: transform .2s, border-color .2s; }
+  .svc:hover { transform: translateY(-3px); border-color: var(--glass-border); }
+  .svc .ic { width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; color: var(--brass); background: rgba(201,168,106,0.1); flex-shrink: 0; }
+  .svc h3 { font-family: var(--font-display); font-size: 15.5px; font-weight: 600; }
+  .svc p { color: var(--text-faint); font-size: 12.5px; margin-top: 3px; }
+
+  /* PROMISE */
+  .promise { padding: clamp(34px, 5vw, 54px); display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .promise blockquote { font-family: var(--font-display); font-weight: 500; font-size: clamp(20px, 2.6vw, 26px); line-height: 1.4; letter-spacing: -0.4px; }
+  .promise .by { margin-top: 18px; font-size: 13px; color: var(--text-faint); font-family: var(--font-mono); letter-spacing: .5px; }
+  .promise ul { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .promise li { display: flex; gap: 13px; align-items: flex-start; }
+  .promise li .tick { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; color: var(--mint); background: color-mix(in srgb, var(--mint) 13%, transparent); }
+  .promise li b { font-weight: 600; }
+  .promise li span { display: block; color: var(--text-dim); font-size: 13.5px; margin-top: 2px; }
 
   /* FAQ */
-  .faq { max-width: 760px; margin: 44px auto 0; }
-  details { border-bottom: 1px solid var(--border-soft); }
-  summary { cursor: pointer; padding: 20px 0; font-family: var(--display); font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-  summary::-webkit-details-marker { display: none; }
-  summary .plus { color: var(--brass); font-size: 22px; transition: transform .2s; flex-shrink: 0; }
-  details[open] summary .plus { transform: rotate(45deg); }
-  details p { padding: 0 0 20px; color: var(--text-dim); font-size: 15px; line-height: 1.6; max-width: 640px; }
+  .faq { max-width: 760px; margin: 46px auto 0; display: flex; flex-direction: column; gap: 12px; }
+  details.qa { padding: 6px 22px; transition: border-color .2s; }
+  details.qa[open] { border-color: var(--glass-border); }
+  details.qa summary { list-style: none; cursor: pointer; padding: 16px 0; font-family: var(--font-display); font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  details.qa summary::-webkit-details-marker { display: none; }
+  details.qa summary .plus { color: var(--brass); transition: transform .25s; flex-shrink: 0; }
+  details.qa[open] summary .plus { transform: rotate(45deg); }
+  details.qa p { color: var(--text-dim); font-size: 14px; line-height: 1.6; padding: 0 0 18px; }
 
-  /* CTA / form */
-  .quote { background: linear-gradient(160deg, var(--surface), var(--bg-2)); border: 1px solid var(--border); border-radius: 22px; padding: 48px; display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: center; margin-top: 12px; }
-  .quote-left h2 { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: -0.8px; line-height: 1.1; margin-bottom: 16px; }
-  .quote-left p { color: var(--text-dim); font-size: 15.5px; margin-bottom: 22px; }
-  .quote-left .alt { font-size: 14px; color: var(--text-faint); }
-  .quote-left .alt a { color: var(--brass-soft); }
-  form { display: grid; gap: 13px; }
-  .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
-  label { font-size: 12.5px; color: var(--text-dim); margin-bottom: 5px; display: block; font-weight: 500; }
-  input, select, textarea {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 11px 13px; color: var(--text); font-family: var(--body); font-size: 14.5px; transition: border-color .15s;
+  /* CTA */
+  .cta { padding: clamp(40px, 6vw, 64px); text-align: center; }
+  .cta h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.8px; }
+  .cta p { color: var(--text-dim); font-size: 16px; margin: 14px 0 28px; }
+  .cta-row { display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--glass-line); margin-top: 80px; padding: 40px 0 50px; }
+  .foot-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .foot-inner .muted { color: var(--text-faint); font-size: 13px; }
+  .foot-links { display: flex; gap: 22px; }
+  .foot-links a { color: var(--text-dim); font-size: 13.5px; }
+  .foot-links a:hover { color: var(--text); }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s cubic-bezier(.2,1,.3,1), transform .7s cubic-bezier(.2,1,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+    .mock-stack { margin: 0 auto; }
+    .trust { grid-template-columns: repeat(2, 1fr); }
+    .steps { grid-template-columns: repeat(2, 1fr); }
+    .services { grid-template-columns: repeat(2, 1fr); }
+    .promise { grid-template-columns: 1fr; gap: 28px; }
+    .nav-links .nl { display: none; }
   }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brass); }
-  textarea { resize: vertical; min-height: 64px; }
-  .submit { background: var(--brass); color: #1a130a; font-weight: 600; font-size: 15px; padding: 13px; border: none; border-radius: 11px; cursor: pointer; transition: transform .15s, box-shadow .15s; margin-top: 4px; }
-  .submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,106,0.3); }
-  .form-note { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
-
-  /* footer */
-  footer { border-top: 1px solid var(--border-soft); padding: 56px 0 40px; margin-top: 84px; }
-  .foot-grid { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
-  .foot-brand { max-width: 320px; }
-  .foot-brand p { color: var(--text-dim); font-size: 14px; margin-top: 14px; line-height: 1.6; }
-  .foot-links { display: flex; gap: 56px; }
-  .foot-col h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-faint); margin-bottom: 14px; }
-  .foot-col a { display: block; color: var(--text-dim); font-size: 14px; padding: 4px 0; transition: color .15s; }
-  .foot-col a:hover { color: var(--brass-soft); }
-  .foot-bottom { margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--border-soft); color: var(--text-faint); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-
-  /* responsive */
-  @media (max-width: 900px) {
-    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
-    .status-panel { max-width: 440px; }
-    .dig-grid { grid-template-columns: 1fr; gap: 40px; }
-    .quote { grid-template-columns: 1fr; padding: 32px; gap: 32px; }
-    .steps { grid-template-columns: repeat(2,1fr); }
-    .services { grid-template-columns: repeat(2,1fr); }
-    .trust-grid { grid-template-columns: 1fr; }
-    .nav-links { display: none; }
-    .menu-btn { display: block; }
+  @media (max-width: 640px) {
+    .mock2 { display: none; }
   }
   @media (max-width: 560px) {
-    .strip-inner { grid-template-columns: 1fr; }
-    .stat { border-right: none; border-bottom: 1px solid var(--border-soft); }
-    .steps, .services { grid-template-columns: 1fr; }
-    .frow { grid-template-columns: 1fr; }
-    section.block { padding: 60px 0; }
-    .hero { padding: 56px 0 48px; }
+    .trust, .steps, .services { grid-template-columns: 1fr; }
+    .nav-login { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none; opacity: 1; transform: none; }
+    .lt-dot.active, .mock, .mock2 { animation: none; }
+    * { scroll-behavior: auto; }
+  }
+  svg.i { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="wrap nav-inner">
-    <a href="#" class="logo"><img src="/vale-mark.png" alt="Valé" style="width:34px;height:34px;object-fit:contain;display:block"> Valé</a>
-    <div class="nav-links">
-      <a href="#kako">Kako funkcioniše</a>
-      <a href="#usluge">Usluge</a>
-      <a href="#platforma">Platforma</a>
-      <a href="#poverenje">Poverenje</a>
-      <a href="#faq">Pitanja</a>
-      <a href="/login" class="nav-cta">Prijava</a>
-    </div>
-    <button class="menu-btn" aria-label="Meni">☰</button>
-  </div>
-</nav>
+<div class="amb"><span class="g1"></span><span class="g2"></span><span class="g3"></span></div>
 
-<!-- HERO -->
-<header class="hero">
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <!-- <span class="eyebrow"><span class="dot"></span> Novi Sad · Concierge za vozila</span> -->
-      <h1>Vaše vozilo, <span class="accent">bez vašeg dana</span> potrošenog na to.</h1>
-      <p class="lead">Preuzimamo auto sa vaše adrese, vodimo ga na servis, tehnički, gume ili pranje — i vraćamo nazad. Sve zakazujete i pratite u aplikaciji, korak po korak.</p>
-      <div class="hero-actions">
-        <a href="/register" class="btn-primary">Zakaži preuzimanje</a>
-        <a href="#kako" class="btn-ghost">Kako funkcioniše</a>
+<div class="wrap">
+  <nav>
+    <div class="nav-inner glass">
+      <a href="#" class="logo"><img src="/vale-mark.png" alt="Valé"> Valé</a>
+      <div class="nav-links">
+        <a href="#kako" class="nl">Kako funkcioniše</a>
+        <a href="#usluge" class="nl">Usluge</a>
+        <a href="#poverenje" class="nl">Poverenje</a>
+        <a href="#pitanja" class="nl">Pitanja</a>
+        <span class="nav-cta">
+          <a href="/login" class="nav-login">Prijava</a>
+          <a href="/register" class="nav-book">Zakaži preuzimanje</a>
+        </span>
       </div>
     </div>
+  </nav>
 
-    <!-- SIGNATURE: ilustracija auta + kompaktna status traka -->
-    <div class="hero-visual">
-      <div class="hero-photo">
-        <div class="car-frame">
-          <img class="car-photo" src="https://hips.hearstapps.com/hmg-prod/images/2023-range-rover-se-p400-lwb-105-1650304551.jpg?1649150071?auto=compress&cs=tinysrgb&w=1100&h=800&fit=crop" alt="Premium automobil" loading="eager" width="1100" height="800">
-        </div>
-        <div class="float-status">
-          <div class="sp-head">
-            <div class="sp-car">
-              <span class="ic">
-                <svg class="ico" viewBox="0 0 24 24"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11M5 11h14M5 11v5m14-5v5M7 16h10M6 16v2m12-2v2"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>
-              </span>
-              <div>
-                <div class="t1">Range Rover · 2025</div>
-                <div class="t2">Tehnički + gume</div>
-              </div>
-            </div>
-            <span class="sp-live"><span class="pulse"></span> UŽIVO</span>
-          </div>
-          <div class="timeline">
-            <div class="tl-step done">
-              <div class="tl-rail"><span class="tl-node"></span><span class="tl-line"></span></div>
-              <div class="tl-body"><div class="s1">Vozilo preuzeto</div><div class="s2">08:24 · foto sačuvana</div></div>
-            </div>
-            <div class="tl-step active">
-              <div class="tl-rail"><span class="tl-node"></span></div>
-              <div class="tl-body"><div class="s1">Usluga u toku</div><div class="s2">završetak ~10:30</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
-
-<!-- STATS -->
-<div class="strip">
-  <div class="wrap strip-inner">
-    <div class="stat"><div class="n">1</div><div class="l">kontakt osoba od početka do kraja</div></div>
-    <div class="stat"><div class="n">5</div><div class="l">koraka koje pratite uživo u aplikaciji</div></div>
-    <div class="stat"><div class="n">0</div><div class="l">vaših odlazaka i čekanja u redu</div></div>
-  </div>
-</div>
-
-<!-- KAKO FUNKCIONIŠE -->
-<section class="block" id="kako">
-  <div class="wrap">
-    <div class="sec-eyebrow">Kako funkcioniše</div>
-    <h2 class="sec-title">Pet koraka, bez izgubljenog dana.</h2>
-    <p class="sec-sub">Zahtev pošaljete za par minuta. Sve ostalo radimo mi — a vi u svakom trenutku znate gde je vaše vozilo.</p>
-    <div class="steps">
-      <div class="step"><div class="num">01</div><h3>Zakažete</h3><p>Unesete vozilo, izaberete usluge i adresu, predložite vreme preuzimanja. Možete birati svog servisera ili prepustiti nama.</p></div>
-      <div class="step"><div class="num">02</div><h3>Potvrdimo ponudu</h3><p>Šaljemo tačan termin i cenu prevoza. Vi potvrđujete jednim tapom pre nego što bilo šta krene.</p></div>
-      <div class="step"><div class="num">03</div><h3>Preuzimamo auto</h3><p>Vozač dolazi na adresu, pravi foto-zapis stanja vozila i odvozi ga na dogovorenu uslugu.</p></div>
-       <div class="step"><div class="num">04</div><h3>Završavamo obavezu</h3><p>Koordiniramo servis, tehnički, gume ili pranje. Status pratite uživo, korak po korak.</p></div>
-    </div>
-    <div class="steps" >
-      
-       <div class="step"><div class="num">05</div><h3>Vraćamo vozilo</h3><p>Auto vraćamo na adresu koju ste izabrali, uz foto stanja posle i pregled. Posao se zatvara, a sve ostaje u vašoj istoriji.</p></div>
-  </div>
-</section>
-
-<!-- USLUGE -->
-<section class="block" id="usluge" style="background:var(--bg-2); border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);">
-  <div class="wrap">
-    <div class="usluge-head">
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-grid">
       <div>
-        <div class="sec-eyebrow">Usluge</div>
-        <h2 class="sec-title">Sve auto-obaveze koje stalno odlažete.</h2>
-        <p class="sec-sub">Možete tražiti jednu uslugu ili kombinovati više njih u jednom preuzimanju — svaka može ići kod drugog servisera.</p>
+        <span class="eyebrow">Novi Sad · Car concierge</span>
+        <h1>Servis, tehnički i gume — <span class="grad">bez čekanja.</span></h1>
+        <p class="lead">Preuzimamo vaše vozilo s adrese, vodimo ga gde treba i vraćamo nazad. Vi odobravate svaku ponudu i pratite svaki korak — uz foto dokaz pre i posle.</p>
+        <div class="hero-cta">
+          <a href="/register" class="btn-primary">Zakaži preuzimanje
+            <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#kako" class="btn-ghost">Kako funkcioniše</a>
+        </div>
+        <div class="hero-note"><span class="dot"></span> Bez obaveza — ponudu i cenu vidite pre nego što išta krene.</div>
       </div>
-      <div class="section-photo">
-        <img src="https://repairsmith-prod-wordpress.s3.amazonaws.com/2022/11/mechanic-working-on-engine.jpg?auto=compress&cs=tinysrgb&w=800&h=540&fit=crop" alt="Elegantan automobil" loading="lazy" width="800" height="540">
-      </div>
-    </div>
-    <div class="services">
-      <div class="svc">
-        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></div>
-        <h3>Servis</h3><p>Odlazak kod mehaničara, koordinacija termina i povratak vozila nakon intervencije.</p>
-      </div>
-      <div class="svc">
-        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v3m0 10v3m8-8h-3M7 12H4"/></svg></div>
-        <h3>Zamena guma</h3><p>Sezonska zamena, balansiranje i logistika oko vulkanizera ili skladištenja guma.</p>
-      </div>
-      <div class="svc">
-        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M5 13v4m14-4v4M7 17h10"/><path d="M12 3v2m3-1l-1 1.5M9 4l1 1.5"/></svg></div>
-        <h3>Pranje i detailing</h3><p>Spoljašnje i unutrašnje pranje, dubinsko čišćenje i premium detailing tretmani.</p>
-      </div>
-      <div class="svc">
-        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M9 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
-        <h3>Tehnički pregled</h3><p>Organizacija pregleda i komunikacija statusa dok vi nastavljate svoj dan.</p>
-      </div>
-      <div class="svc">
-        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/><path d="M15 16l2 2 3-3"/></svg></div>
-        <h3>Registracija</h3><p>Pomoć oko registracionih obaveza, dokumentacije i povezanih administrativnih koraka.</p>
-      </div>
-      <div class="svc">
-        <div class="ico-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M3 12h11l3-4h2.5a1.5 1.5 0 0 1 1.5 1.5V14h-2M3 12v4h2m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M3 12V8a1 1 0 0 1 1-1h6"/></svg></div>
-        <h3>Preuzimanje i dostava</h3><p>Prevoz vozila između adresa, servisa, garaže ili poslovne lokacije.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- PLATFORMA (differentiator) -->
-<section class="block digital" id="platforma">
-  <div class="wrap dig-grid">
-    <div>
-      <div class="sec-eyebrow">Digitalna platforma</div>
-      <h2 class="sec-title">Razlika je u tome što sve vidite.</h2>
-      <p class="sec-sub">Bez dopisivanja i pogađanja gde je auto. Otvorite aplikaciju i tačno znate u kojoj je fazi.</p>
-      <ul class="dig-list">
-        <li><span class="chk">✓</span><div><div class="dt">Zakazivanje online</div><div class="dd">Vozilo, usluge i adrese unesete za par minuta — bez poziva.</div></div></li>
-        <li><span class="chk">✓</span><div><div class="dt">Praćenje statusa uživo</div><div class="dd">Svaki korak od preuzimanja do vraćanja vidite u realnom vremenu.</div></div></li>
-        <li><span class="chk">✓</span><div><div class="dt">Foto stanja pre i posle</div><div class="dd">Dokumentovano stanje vozila na preuzimanju i vraćanju — uvek dostupno.</div></div></li>
-        <li><span class="chk">✓</span><div><div class="dt">Istorija i sačuvani podaci</div><div class="dd">Vozila i serviseri ostaju sačuvani; sledeći zahtev je još brži.</div></div></li>
+      <div class="mock-stack reveal">
+        <div class="mock glass">
+          <div class="mock-top">
+            <span class="iwell">
+              <svg class="i" viewBox="0 0 24 24"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11M5 11h14M5 11v5m14-5v5M7 16h10"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>
+            </span>
+            <div style="flex:1; min-width:0">
+              <div style="font-family:var(--font-display); font-weight:600; font-size:16px">Audi A4 · 2021</div>
+              <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-top:3px">NS 088-AA · preuzimanje 09:00–10:00</div>
+            </div>
+          </div>
+          <div style="margin-top:16px"><span class="pill brass" id="heroPill"><span class="pdot"></span><span id="heroPillTxt">Zahtev poslat</span></span></div>
+          <div class="lt" id="heroLt">
+            <div class="lt-stop"><span class="lt-dot"></span><span class="lt-lbl">Zahtev</span></div>
+            <span class="lt-line"><span class="lt-fill"></span></span>
+            <div class="lt-stop"><span class="lt-dot"></span><span class="lt-lbl">Ponuda</span></div>
+            <span class="lt-line"><span class="lt-fill"></span></span>
+            <div class="lt-stop"><span class="lt-dot"></span><span class="lt-lbl">Preuzimanje</span></div>
+            <span class="lt-line"><span class="lt-fill"></span></span>
+            <div class="lt-stop"><span class="lt-dot"></span><span class="lt-lbl">Vraćeno</span></div>
+          </div>
+          <div class="hero-sub" id="heroSub">Čekate ponudu…</div>
+          <div class="mock-meta">
+            <span class="chip">Servis</span><span class="chip">Gume</span><span class="chip">Foto PRE ✓</span>
+          </div>
+        </div>
+        <div class="mock2 glass-soft">
+          <div class="m2-eyebrow">PONUDA</div>
+          <div class="m2-price">1.200 <span>RSD</span></div>
+          <div class="m2-sub">prevoz · termin 14. mart, 09:00</div>
+          <div class="m2-actions">
+            <span class="m2-accept">Prihvati</span>
+            <span class="m2-ghost">Izmena</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TRUST STRIP -->
+  <section class="trust">
+    <div class="item glass-soft reveal">
+      <div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg></div>
+      <h3>Vi odobravate</h3>
+      <p>Ništa se ne dešava dok ne prihvatite ponudu — servisera, termin i cenu prevoza.</p>
+    </div>
+    <div class="item glass-soft reveal">
+      <div class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2.5"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg></div>
+      <h3>Foto PRE i POSLE</h3>
+      <p>Stanje vozila beležimo fotografijama pre preuzimanja i posle vraćanja — sve vidite u aplikaciji.</p>
+    </div>
+    <div class="item glass-soft reveal">
+      <div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 13h16M4 19h10"/><circle cx="9" cy="7" r="1.6"/><circle cx="15" cy="13" r="1.6"/></svg></div>
+      <h3>Pratite uživo</h3>
+      <p>Svaki status u realnom vremenu, sa imenovanim vozačem i njegovim kontaktom.</p>
+    </div>
+    <div class="item glass-soft reveal">
+      <div class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5a2.5 2.5 0 0 1 5 .3c0 1.7-2.5 1.9-2.5 3.2M12 16.5h.01"/></svg></div>
+      <h3>Plaćate direktno</h3>
+      <p>Uslugu plaćate serviseru. Valé naplaćuje samo prevoz — bez skrivene marže.</p>
+    </div>
+  </section>
+
+  <!-- KAKO -->
+  <section class="block center" id="kako">
+    <span class="eyebrow">Kako funkcioniše</span>
+    <h2 class="section-title">Četiri koraka, vaše vreme nazad</h2>
+    <p class="section-sub">Od zakazivanja do vraćanja — sve vodite iz aplikacije, bez poziva i bez čekaonica.</p>
+    <div class="steps">
+      <div class="step glass-soft reveal" style="text-align:left">
+        <div class="num">01</div>
+        <h3>Zakažite</h3>
+        <p>Unesite vozilo, uslugu i adresu i termin preuzimanja. Možete predložiti i svog servisera.</p>
+      </div>
+      <div class="step glass-soft reveal" style="text-align:left">
+        <div class="num">02</div>
+        <h3>Ponuda</h3>
+        <p>Predlažemo servisera, termin i cenu prevoza. Vi odlučujete — prihvatite ili tražite izmenu.</p>
+      </div>
+      <div class="step glass-soft reveal" style="text-align:left">
+        <div class="num">03</div>
+        <h3>Preuzimanje</h3>
+        <p>Vozač dolazi na adresu, fotografiše vozilo i vodi ga na uslugu. Pratite svaki korak.</p>
+      </div>
+      <div class="step glass-soft reveal" style="text-align:left">
+        <div class="num">04</div>
+        <h3>Vraćanje</h3>
+        <p>Vraćamo vozilo na vašu adresu, sa foto potvrdom stanja posle usluge.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- USLUGE -->
+  <section class="block center" id="usluge">
+    <span class="eyebrow">Usluge</span>
+    <h2 class="section-title">Sve oko vozila, na jednom mestu</h2>
+    <p class="section-sub">Vi birate šta treba — mi organizujemo prevoz i uslugu kod proverenog partnera ili kod vašeg servisera.</p>
+    <div class="services">
+      <div class="svc glass-soft reveal">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></span>
+        <div><h3>Servis i popravke</h3><p>Redovan ili vanredni servis</p></div>
+      </div>
+      <div class="svc glass-soft reveal">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M9 4h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1V5a1 1 0 0 1 1-1z"/><path d="M8 12h8M8 16h5"/></svg></span>
+        <div><h3>Tehnički pregled</h3><p>Bez čekanja u redu</p></div>
+      </div>
+      <div class="svc glass-soft reveal">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg></span>
+        <div><h3>Registracija</h3><p>Mi obavimo papirologiju</p></div>
+      </div>
+      <div class="svc glass-soft reveal">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v3m0 10v3m8-8h-3M7 12H4"/></svg></span>
+        <div><h3>Gume</h3><p>Zamena i čuvanje</p></div>
+      </div>
+      <div class="svc glass-soft reveal">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M7 17h10"/><path d="M12 3v2m3-1l-1 1.5M9 4l1 1.5"/></svg></span>
+        <div><h3>Pranje / detailing</h3><p>Vozilo kao novo</p></div>
+      </div>
+      <div class="svc glass-soft reveal">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12h11l3-4h2.5a1.5 1.5 0 0 1 1.5 1.5V14h-2M3 12v4h2m14-2h-2M3 12V8a1 1 0 0 1 1-1h6"/><circle cx="7" cy="17" r="1.6"/><circle cx="17" cy="17" r="1.6"/></svg></span>
+        <div><h3>Prevoz vozila</h3><p>Od tačke do tačke</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POVERENJE / PROMISE -->
+  <section class="block" id="poverenje">
+    <div class="promise glass reveal">
+      <div>
+        <span class="eyebrow">Naša obaveza</span>
+        <blockquote>„Pravimo Valé jer smo i sami izgubili previše sati po čekaonicama. Cilj je jednostavan — vaše vreme nazad, a vaše vozilo zbrinuto, uz potpunu transparentnost."</blockquote>
+        <div class="by">— Tim Valé, Novi Sad</div>
+      </div>
+      <ul>
+        <li>
+          <span class="tick"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg></span>
+          <div><b>Kontrola je kod vas</b><span>Vidite ponudu i cenu unapred; ništa ne krene bez vašeg „da".</span></div>
+        </li>
+        <li>
+          <span class="tick"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg></span>
+          <div><b>Dokaz, ne obećanje</b><span>Foto vozila pre i posle, vidljive u svakom trenutku.</span></div>
+        </li>
+        <li>
+          <span class="tick"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg></span>
+          <div><b>Bez skrivenih troškova</b><span>Servis plaćate direktno serviseru; mi naplaćujemo samo prevoz.</span></div>
+        </li>
+        <li>
+          <span class="tick"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg></span>
+          <div><b>Poznat vozač</b><span>Ime i kontakt vozača koji preuzima vaše vozilo — uvek znate ko vozi.</span></div>
+        </li>
       </ul>
     </div>
-    <div class="phone-card">
-      <div class="pc-top"><span class="t">Moji poslovi</span><span class="badge">2 aktivna</span></div>
-      <div class="pc-row"><span class="ic"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 5v2.5M12 16.5V19m7-7h-2.5M7.5 12H5"/></svg></span><div><div class="m1">Audi A4 · Zamena guma</div><div class="m2">Vulkanizer Petrović · danas</div></div><span class="stat-tag prog">U TOKU</span></div>
-      <div class="pc-row"><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M9 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></span><div><div class="m1">Golf 7 · Tehnički</div><div class="m2">Vraćeno 14:10 · foto ✓</div></div><span class="stat-tag done">ZAVRŠENO</span></div>
-      <div class="pc-row"><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M5 13v4m14-4v4M7 17h10"/></svg></span><div><div class="m1">BMW X3 · Detailing</div><div class="m2">Vraćeno juče · foto ✓</div></div><span class="stat-tag done">ZAVRŠENO</span></div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- POVERENJE -->
-<section class="block" id="poverenje">
-  <div class="wrap">
-    <div class="sec-eyebrow">Poverenje i bezbednost</div>
-    <h2 class="sec-title">Jasan proces za vozilo koje vam je važno.</h2>
-    <p class="sec-sub">Svako preuzimanje je dokumentovano, a ključni koraci se potvrđuju pre nego što nastavimo dalje.</p>
-    <div class="trust-grid">
-      <div class="trust"><h3>Provereni vozači</h3><p>Sa vašim vozilom rade samo odabrani i provereni članovi tima.</p></div>
-      <div class="trust"><h3>Foto pre i posle</h3><p>Beležimo stanje vozila na preuzimanju i vraćanju, vidljivo vama u aplikaciji.</p></div>
-      <div class="trust"><h3>Zapisnik o preuzimanju</h3><p>Stanje, kilometraža i dogovoreni zadatak evidentiraju se pre polaska.</p></div>
-      <div class="trust"><h3>Transparentna cena</h3><p>Cenu prevoza i termin potvrđujete pre nego što bilo šta krene.</p></div>
-      <div class="trust"><h3>Vi birate servisera</h3><p>Možete zadati svog majstora ili prepustiti nama da predložimo proverenog.</p></div>
-      <div class="trust"><h3>Bez iznenađenja</h3><p>Dodatne radove serviser ne izvodi bez vaše prethodne potvrde.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section class="block" id="faq" style="background:var(--bg-2); border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);">
-  <div class="wrap">
-    <div class="sec-eyebrow" style="text-align:center;">Pitanja</div>
-    <h2 class="sec-title" style="margin:0 auto; text-align:center;">Najčešća pitanja.</h2>
+  <!-- FAQ -->
+  <section class="block center" id="pitanja">
+    <span class="eyebrow">Pitanja</span>
+    <h2 class="section-title">Ono što vas najviše zanima</h2>
     <div class="faq">
-      <details open><summary>Moram li biti prisutan tokom celog procesa?<span class="plus">+</span></summary><p>Ne. Potrebni ste samo za predaju ključeva pri preuzimanju i da primite vozilo pri vraćanju. Sve između pratite u aplikaciji.</p></details>
-      <details><summary>Kako znam gde je moje vozilo?<span class="plus">+</span></summary><p>U aplikaciji vidite tačan status u svakom trenutku — od preuzimanja, preko servisera, do vraćanja. Uz svaki korak dobijate i notifikaciju.</p></details>
-      <details><summary>Da li plaćam servis direktno ili preko vas?<span class="plus">+</span></summary><p>Uslugu (servis, gume, pranje) plaćate direktno serviseru. Mi naplaćujemo samo prevoz vozila, čiju cenu potvrđujete unapred.</p></details>
-      <details><summary>Mogu li da biram svog servisera?<span class="plus">+</span></summary><p>Da. Za svaku uslugu birate da li želite svog majstora ili da vam mi predložimo proverenog partnera. Sačuvane servisere lako birate i sledeći put.</p></details>
-      <details><summary>Šta ako servis pronađe dodatni kvar?<span class="plus">+</span></summary><p>Dodatni radovi se ne izvode bez vaše potvrde. Prvo dobijate informaciju i procenu, pa odlučujete.</p></details>
+      <details class="qa glass-soft" open>
+        <summary>Ko vozi moje vozilo? <span class="plus"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+        <p>Imenovani vozač iz našeg tima. U aplikaciji vidite njegovo ime i kontakt i možete ga pozvati u svakom trenutku.</p>
+      </details>
+      <details class="qa glass-soft">
+        <summary>Šta ako se nešto desi na putu? <span class="plus"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+        <p>Stanje vozila beležimo fotografijama pre preuzimanja i posle vraćanja, pa je sve jasno i pre i posle. Za bilo kakvo pitanje, dispečer vam je dostupan tokom celog procesa.</p>
+      </details>
+      <details class="qa glass-soft">
+        <summary>Kako i kome plaćam? <span class="plus"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+        <p>Uslugu plaćate serviseru direktno. Valé naplaćuje samo prevoz, čiju cenu vidite u ponudi pre nego što potvrdite.</p>
+      </details>
+      <details class="qa glass-soft">
+        <summary>Mogu li da koristim svog servisera? <span class="plus"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+        <p>Možete. Predložite svog servisera pri zakazivanju ili nam prepustite da predložimo proverenog partnera u Novom Sadu.</p>
+      </details>
+      <details class="qa glass-soft">
+        <summary>Mogu li da otkažem? <span class="plus"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+        <p>Da — dok posao nije počeo, zahtev možete otkazati iz aplikacije bez obaveza.</p>
+      </details>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- CTA / QUOTE FORM -->
-<section class="block" id="upit">
-  <div class="wrap">
-    <div class="quote">
-      <div class="quote-left">
-        <h2>Spremni da prepustite brigu?</h2>
-        <p>Napravite nalog i zakažite preuzimanje kroz aplikaciju, sa praćenjem statusa od početka do kraja.</p>
-        <a href="/register" class="btn-primary" style="display:inline-block; margin-bottom:18px;">Otvori nalog i zakaži</a>
-        <div class="alt">Imate nalog? <a href="/login">Prijavite se</a><br>Ili pošaljite brzi upit desno — javljamo se sa terminom.</div>
-      </div>
-      <div class="quote-right">
-        <form onsubmit="event.preventDefault(); alert('Hvala! U pravoj verziji ovo šalje upit. Za punu uslugu otvorite nalog u aplikaciji.');">
-          <div class="frow">
-            <div><label>Ime i prezime</label><input type="text" required placeholder="Vaše ime"></div>
-            <div><label>Telefon</label><input type="tel" required placeholder="06x xxx xxxx"></div>
-          </div>
-          <div><label>Adresa preuzimanja</label><input type="text" required placeholder="Ulica i broj, Novi Sad"></div>
-          <div class="frow">
-            <div><label>Vozilo</label><input type="text" required placeholder="Marka, model, godište"></div>
-            <div><label>Usluga</label>
-              <select required>
-                <option value="">Izaberite</option>
-                <option>Servis</option><option>Zamena guma</option><option>Pranje / detailing</option>
-                <option>Tehnički pregled</option><option>Registracija</option><option>Kombinovano</option>
-              </select>
-            </div>
-          </div>
-          <div><label>Napomena (opciono)</label><textarea placeholder="Željeni termin, dodatne informacije..."></textarea></div>
-          <button type="submit" class="submit">Pošalji upit</button>
-          <div class="form-note">Slanjem upita ne nastaje automatska rezervacija. Termin i cenu prevoza potvrđujemo u komunikaciji.</div>
-        </form>
+  <!-- CTA -->
+  <section class="block">
+    <div class="cta glass reveal">
+      <h2>Prepustite nam ključeve.</h2>
+      <p>Zakažite prvo preuzimanje za par minuta — ponudu vidite pre nego što išta krene.</p>
+      <div class="cta-row">
+        <a href="/register" class="btn-primary">Zakaži preuzimanje
+          <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="/login" class="btn-ghost">Već imam nalog</a>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <a href="#" class="logo"><img src="/vale-mark.png" alt="Valé" style="width:34px;height:34px;object-fit:contain;display:block"> Valé</a>
-        <p>Concierge servis za vozila u Novom Sadu. Manje čekanja, više vremena za ono što je važno.</p>
-      </div>
+  <footer>
+    <div class="foot-inner">
+      <a href="#" class="logo"><img src="/vale-mark.png" alt="Valé"> Valé</a>
       <div class="foot-links">
-        <div class="foot-col">
-          <h4>Servis</h4>
-          <a href="#kako">Kako funkcioniše</a>
-          <a href="#usluge">Usluge</a>
-          <a href="#platforma">Platforma</a>
-          <a href="#faq">Pitanja</a>
-        </div>
-        <div class="foot-col">
-          <h4>Nalog</h4>
-          <a href="/login">Prijava</a>
-          <a href="/register">Registracija</a>
-          <a href="#upit">Brzi upit</a>
-        </div>
-        <div class="foot-col">
-          <h4>Kontakt</h4>
-          <a href="tel:+381600000000">06x xxx xxxx</a>
-          <a href="mailto:info@domen.rs">info@domen.rs</a>
-        </div>
+        <a href="#kako">Kako funkcioniše</a>
+        <a href="#usluge">Usluge</a>
+        <a href="#pitanja">Pitanja</a>
+        <a href="/login">Prijava</a>
       </div>
+      <span class="muted">© 2026 Valé · Novi Sad</span>
     </div>
-    <div class="foot-bottom">
-      <span>© 2026 Valé. Sva prava zadržana.</span>
-      <span>Novi Sad, Srbija</span>
-    </div>
-  </div>
-</footer>
+  </footer>
+</div>
 
 <script>
-  // mobilni meni — jednostavan toggle
-  document.querySelector('.menu-btn')?.addEventListener('click', () => {
-    const links = document.querySelector('.nav-links');
-    const open = links.style.display === 'flex';
-    links.style.display = open ? 'none' : 'flex';
-    links.style.cssText += open ? '' : 'position:absolute;top:68px;left:0;right:0;flex-direction:column;background:var(--bg-2);padding:20px 24px;gap:16px;border-bottom:1px solid var(--border);';
-  });
+  (function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+
+  // hero — simulacija celog procesa (zahtev → ponuda → prihvat → preuzimanje → vraćanje)
+  (function () {
+    var lt = document.getElementById('heroLt');
+    if (!lt) return;
+    var dots = lt.querySelectorAll('.lt-dot');
+    var lbls = lt.querySelectorAll('.lt-lbl');
+    var fills = lt.querySelectorAll('.lt-fill');
+    var pill = document.getElementById('heroPill');
+    var pillTxt = document.getElementById('heroPillTxt');
+    var sub = document.getElementById('heroSub');
+
+    var SCENES = [
+      { p: 0, tone: 'brass', pill: 'Zahtev poslat', sub: 'Čekate ponudu…', ms: 2000 },
+      { p: 1, tone: 'brass', pill: 'Ponuda stigla', sub: '<b>1.200 RSD</b> prevoz · termin 14. mart', ms: 2700 },
+      { p: 1, tone: 'mint', pill: '✓ Prihvaćeno', sub: 'Tražimo vozača…', ms: 1900 },
+      { p: 2, tone: 'mint', pill: 'Vozilo preuzeto', sub: 'Stevan M. · na putu do servisera', ms: 2100 },
+      { p: 2, tone: 'mint', pill: 'Na usluzi', sub: 'Servis u toku · foto PRE ✓', ms: 2100 },
+      { p: 3, tone: 'mint', pill: '✓ Vraćeno', sub: 'Na vašoj adresi · foto POSLE ✓', complete: true, ms: 2600 }
+    ];
+
+    function render(s) {
+      var cur = s.p;
+      for (var i = 0; i < dots.length; i++) {
+        var done = i < cur || (i === cur && s.complete);
+        var active = i === cur && !s.complete;
+        var st = done ? ' done' : active ? ' active' : '';
+        dots[i].className = 'lt-dot' + st;
+        lbls[i].className = 'lt-lbl' + st;
+      }
+      for (var j = 0; j < fills.length; j++) fills[j].style.width = j < cur ? '100%' : '0%';
+      if (pillTxt) pillTxt.textContent = s.pill;
+      if (pill) pill.className = 'pill' + (s.tone === 'brass' ? ' brass' : '');
+      if (sub) sub.innerHTML = s.sub;
+    }
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { render(SCENES[4]); return; }
+    var idx = 0;
+    (function step() {
+      render(SCENES[idx]);
+      var ms = SCENES[idx].ms || 2100;
+      idx = (idx + 1) % SCENES.length;
+      setTimeout(step, ms);
+    })();
+  })();
 </script>
 </body>
 </html>
