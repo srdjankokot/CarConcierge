@@ -432,6 +432,37 @@
   box-shadow: 0 28px 60px -28px rgba(0, 0, 0, 0.8);
 }
 
+/* Highlight kartice/reda posle akcije (advance/assign) */
+.rd-flash {
+  animation: rd-flash 1.1s ease-out;
+}
+@keyframes rd-flash {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--mint) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* Drawer scrim fade-in */
+.rd-scrim {
+  animation: rd-fade 0.25s ease-out forwards;
+}
+.rd-slide-in {
+  animation: rd-slide-in 0.28s cubic-bezier(0.2, 1, 0.3, 1);
+}
+@keyframes rd-slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
 /* Inputi */
 .rd-in {
   width: 100%;

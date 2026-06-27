@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   title: "Valé",
   description: "Concierge servis za vozila — Novi Sad",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Concierge" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Valé" },
   icons: { icon: "/icons/favicon-32.png", apple: "/icons/favicon-32.png" },
 };
 
