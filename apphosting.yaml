@@ -32,7 +32,6 @@ env:
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     value: AIzaSyAPrXZcyXZvg6vZC1ZoQNkdbEqo4_P_sPM
     availability: [BUILD, RUNTIME]
-  # Web push (opciono): kad generišeš VAPID ključ, dodaj
-  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
-  #   value: <tvoj-vapid-public-key>
-  #   availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+    value: BC6pWt95Z6oxMFIVmxPkg--8Zh1axvlvDTSgmnCcCT_XyqSX-1sjBFVw7m6cIHZx-azJ98DZNWsFXXHJZjnFCSw
+    availability: [BUILD, RUNTIME]

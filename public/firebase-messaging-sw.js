@@ -16,7 +16,7 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   const n = payload.notification || {};
-  self.registration.showNotification(n.title || "Auto Concierge", {
+  self.registration.showNotification(n.title || "Valé", {
     body: n.body || "",
     icon: "/icons/icon-192.png",
     badge: "/icons/icon-192.png",
