@@ -73,6 +73,7 @@ export interface Partner {
   address: string;
   phone: string;
   serviceTypes: ServiceType[];
+  makes?: string[];
   note?: string;
   isActive: boolean;
   createdAt?: unknown;

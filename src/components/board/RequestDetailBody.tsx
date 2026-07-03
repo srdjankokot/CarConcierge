@@ -344,7 +344,19 @@ export function RequestDetailBody({ requestId, embedded = false }: { requestId: 
                           onChange={(e) => patchOfferService(idx, { partnerId: e.target.value })}
                           options={[
                             { value: "", label: "— Izaberi partnera —" },
-                            ...partners.filter((p) => p.isActive !== false && (p.serviceTypes ?? []).includes(s.type)).map((p) => ({ value: p.id!, label: `${p.name} (${p.address})` })),
+                            ...partners
+                              .filter((p) => p.isActive !== false && (p.serviceTypes ?? []).includes(s.type))
+                              .sort((a, b) => {
+                                if (s.type !== "service") return 0;
+                                const m = vehicle.make.toLowerCase();
+                                const am = !a.makes?.length || a.makes.some((x) => x.toLowerCase() === m);
+                                const bm = !b.makes?.length || b.makes.some((x) => x.toLowerCase() === m);
+                                return (bm ? 1 : 0) - (am ? 1 : 0);
+                              })
+                              .map((p) => {
+                                const spec = s.type === "service" && (p.makes ?? []).some((x) => x.toLowerCase() === vehicle.make.toLowerCase());
+                                return { value: p.id!, label: `${p.name} (${p.address})${spec ? ` · ✓ ${vehicle.make}` : ""}` };
+                              }),
                           ]}
                         />
                         {(() => {

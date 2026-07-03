@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { SERVICE_TYPE_LABEL, SERVICE_TYPE_OPTIONS } from "@/lib/constants";
+import { VEHICLE_MAKES } from "@/lib/vehicles";
 import { partnerSchema } from "@/lib/validation/dispatch";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -32,6 +33,7 @@ export default function PartnersPage() {
 
   const [values, setValues] = useState(EMPTY);
   const [types, setTypes] = useState<ServiceType[]>([]);
+  const [makes, setMakes] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -62,9 +64,14 @@ export default function PartnersPage() {
     setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
   }
 
+  function toggleMake(m: string) {
+    setMakes((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
+  }
+
   function resetForm() {
     setValues(EMPTY);
     setTypes([]);
+    setMakes([]);
     setIsActive(true);
     setEditingId(null);
     setFieldErrors({});
@@ -75,6 +82,7 @@ export default function PartnersPage() {
     setEditingId(p.id ?? null);
     setValues({ name: p.name, address: p.address, phone: p.phone, note: p.note ?? "" });
     setTypes(p.serviceTypes ?? []);
+    setMakes(p.makes ?? []);
     setIsActive(p.isActive !== false);
     setFieldErrors({});
     setFormError("");
@@ -84,7 +92,7 @@ export default function PartnersPage() {
     e.preventDefault();
     if (saving) return;
     setFormError("");
-    const parsed = partnerSchema.safeParse({ ...values, serviceTypes: types });
+    const parsed = partnerSchema.safeParse({ ...values, serviceTypes: types, makes });
     if (!parsed.success) {
       const fe = parsed.error.flatten().fieldErrors;
       setFieldErrors({
@@ -103,6 +111,7 @@ export default function PartnersPage() {
         address: parsed.data.address,
         phone: parsed.data.phone,
         serviceTypes: parsed.data.serviceTypes,
+        makes: parsed.data.serviceTypes.includes("service") ? (parsed.data.makes ?? []) : [],
         note: parsed.data.note || null,
         isActive,
       };
@@ -168,6 +177,29 @@ export default function PartnersPage() {
               {fieldErrors.serviceTypes ? <p className="field-error">{fieldErrors.serviceTypes}</p> : null}
             </div>
 
+            {types.includes("service") ? (
+              <div>
+                <span className="label">
+                  Marke koje servisira <span className="text-text-faint">(prazno = sve marke)</span>
+                </span>
+                <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-lg border border-border-soft p-2">
+                  {VEHICLE_MAKES.map((m) => (
+                    <button
+                      key={m.make}
+                      type="button"
+                      onClick={() => toggleMake(m.make)}
+                      className={cn(
+                        "rounded-lg border px-3 py-1.5 text-sm transition-colors",
+                        makes.includes(m.make) ? "border-accent text-text" : "border-border-soft text-text-dim hover:text-text",
+                      )}
+                    >
+                      {m.make}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             <Input label="Napomena (opciono)" value={values.note} onChange={update("note")} />
 
             <label className="flex items-center gap-2 text-sm text-text-dim">
@@ -224,6 +256,9 @@ export default function PartnersPage() {
                   <div className="mt-1 text-xs text-text-dim">
                     {(p.serviceTypes ?? []).map((t) => SERVICE_TYPE_LABEL[t]).join(", ")}
                   </div>
+                  {p.makes && p.makes.length ? (
+                    <div className="mt-1 text-xs text-text-faint">Servisira: {p.makes.join(", ")}</div>
+                  ) : null}
                 </div>
               ))
             )}

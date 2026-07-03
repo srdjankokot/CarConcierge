@@ -20,6 +20,10 @@ export function mapAuthError(e: unknown): string {
         return "Prijava je otkazana.";
       case "auth/popup-blocked":
         return "Browser je blokirao prozor za prijavu. Dozvolite popup i pokušajte ponovo.";
+      case "auth/unauthorized-domain":
+        return "Ovaj domen nije autorizovan za Google prijavu (Firebase → Authentication → Settings → Authorized domains).";
+      case "auth/operation-not-allowed":
+        return "Google prijava nije uključena (Firebase → Authentication → Sign-in method → Google).";
       case "auth/network-request-failed":
       case "functions/unavailable":
         return "Problem sa mrežom. Pokušajte ponovo.";

@@ -8,6 +8,7 @@ export const partnerSchema = z.object({
   serviceTypes: z
     .array(z.enum(["service", "technical", "registration", "tires", "wash", "other"]))
     .min(1, "Izaberite bar jedan tip usluge"),
+  makes: z.array(z.string().trim().min(1)).max(60).optional(),
   note: z.string().trim().max(200).optional().or(z.literal("")),
 });
 
