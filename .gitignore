@@ -42,3 +42,6 @@ yarn-error.log*
 # agent / skills tooling (lokalno, nije deo aplikacije)
 .agents/
 skills-lock.json
+
+# generisani artefakti (import alat)
+scripts/out/

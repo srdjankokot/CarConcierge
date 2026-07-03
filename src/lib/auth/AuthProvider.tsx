@@ -4,6 +4,7 @@ import { createContext, useEffect, useMemo, useState, type ReactNode } from "rea
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase/client";
+import { resyncMyRoleCallable } from "@/lib/auth/callables";
 import type { Role, UserProfile } from "@/types";
 
 export interface AuthContextValue {
@@ -65,6 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             const res = await auth.currentUser?.getIdTokenResult();
             if (res && res.claims.role !== data.role) {
+              // Claim zaostao za dokumentom → uskladi ga na serveru, pa osveži token.
+              try {
+                await resyncMyRoleCallable();
+              } catch {
+                /* ignore — svejedno pokušaj osvežavanje tokena */
+              }
               await auth.currentUser?.getIdToken(true);
             }
           } catch {

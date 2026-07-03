@@ -42,6 +42,10 @@ export default function PartnersPage() {
   const [toDelete, setToDelete] = useState<Partner | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState<ServiceType | "all">("all");
+  const [activeOnly, setActiveOnly] = useState(false);
+
   useEffect(() => {
     const q = query(collection(db, "partners"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(
@@ -140,6 +144,13 @@ export default function PartnersPage() {
     }
   }
 
+  const filtered = partners.filter((p) => {
+    if (activeOnly && p.isActive === false) return false;
+    if (filterType !== "all" && !(p.serviceTypes ?? []).includes(filterType)) return false;
+    if (search.trim() && !`${p.name} ${p.address} ${p.phone}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
+    return true;
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -147,8 +158,8 @@ export default function PartnersPage() {
         <p className="mt-1 text-sm text-text-dim">Mreža servisera koju nudite klijentima u ponudi.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+        <Card className="lg:sticky lg:top-24">
           <h2 className="text-lg font-semibold">{editingId ? "Izmena partnera" : "Novi partner"}</h2>
           <form onSubmit={handleSubmit} noValidate className="mt-5 flex flex-col gap-4">
             <Input label="Naziv" value={values.name} onChange={update("name")} error={fieldErrors.name} />
@@ -225,16 +236,61 @@ export default function PartnersPage() {
         </Card>
 
         <Card>
-          <h2 className="text-lg font-semibold">Mreža ({partners.length})</h2>
-          <div className="mt-4 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">Mreža</h2>
+            <span className="font-mono text-xs text-text-faint">{filtered.length}/{partners.length}</span>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Pretraga: naziv, adresa, telefon…"
+              className="input"
+            />
+            <div className="flex flex-wrap gap-2">
+              {[{ value: "all", label: "Sve" }, ...SERVICE_TYPE_OPTIONS].map((o) => {
+                const on = filterType === o.value;
+                return (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => setFilterType(o.value as ServiceType | "all")}
+                    className={cn(
+                      "rounded-lg border px-2.5 py-1 text-xs transition-colors",
+                      on ? "border-accent text-text" : "border-border-soft text-text-dim hover:text-text",
+                    )}
+                  >
+                    {o.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setActiveOnly((v) => !v)}
+                className={cn(
+                  "rounded-lg border px-2.5 py-1 text-xs transition-colors",
+                  activeOnly ? "border-mint text-mint" : "border-border-soft text-text-dim hover:text-text",
+                )}
+              >
+                Samo aktivni
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-2 overflow-y-auto pr-1" style={{ maxHeight: "calc(100dvh - 300px)" }}>
             {loading ? (
               <p className="text-sm text-text-dim">Učitavanje…</p>
             ) : partners.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border-soft px-3 py-6 text-center text-sm text-text-faint">
                 Još nema partnera.
               </p>
+            ) : filtered.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-border-soft px-3 py-6 text-center text-sm text-text-faint">
+                Nema rezultata za ovaj filter.
+              </p>
             ) : (
-              partners.map((p) => (
+              filtered.map((p) => (
                 <div key={p.id} className="rounded-lg border border-border-soft bg-bg-2 px-3 py-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-sm font-medium">{p.name}</div>

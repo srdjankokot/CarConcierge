@@ -38,3 +38,6 @@ export const completeClientRegistrationCallable = httpsCallable<
   CompleteClientRegistrationInput,
   { ok: true }
 >(functions, "completeClientRegistration");
+
+// Uskladi custom claim (uloga) sa users dokumentom — poziva se pri neslaganju.
+export const resyncMyRoleCallable = httpsCallable<void, { role: string }>(functions, "resyncMyRole");

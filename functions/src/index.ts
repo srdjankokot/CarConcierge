@@ -3,6 +3,7 @@ export { onUserCreate } from "./auth/onUserCreate";
 export { completeClientRegistration } from "./auth/completeClientRegistration";
 export { createDriver } from "./auth/createDriver";
 export { createDispatcher } from "./auth/createDispatcher";
+export { resyncMyRole } from "./auth/resyncMyRole";
 
 // Zahtevi — klijent (F2).
 export { createRequest } from "./requests/createRequest";
