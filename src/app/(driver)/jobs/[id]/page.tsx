@@ -17,8 +17,9 @@ import { IconWell } from "@/components/redesign/IconWell";
 import { StatusPill } from "@/components/redesign/StatusPill";
 import { AnimatedStepper } from "@/components/redesign/AnimatedStepper";
 import { PhotoUploader } from "@/components/driver/PhotoUploader";
+import { allRequiredFilled, normalizePhotos, SLOT_LABEL } from "@/lib/driver/photoSlots";
 import { Logistics } from "@/components/requests/Logistics";
-import type { CarRequest } from "@/types";
+import type { CarRequest, JobPhoto } from "@/types";
 
 export default function DriverJobDetailPage() {
   const params = useParams<{ id: string }>();
@@ -94,7 +95,7 @@ export default function DriverJobDetailPage() {
   const { vehicle, services, status } = job;
   const action = DRIVER_ACTION[status];
   const phasePhotos = action?.phase === "before" ? job.photosBefore : job.photosAfter;
-  const blockedByPhoto = !!action?.phase && (phasePhotos?.length ?? 0) === 0;
+  const blockedByPhoto = !!action?.phase && !allRequiredFilled(phasePhotos);
   const showBar = !!action || canRevert(status);
 
   return (
@@ -141,11 +142,10 @@ export default function DriverJobDetailPage() {
               <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">
                 {action.phase === "before" ? "Foto PRE preuzimanja" : "Foto POSLE (vraćanje)"}
               </h2>
-              <p className="mb-3 mt-1 text-xs text-text-dim">Obavezna bar jedna fotografija pre nastavka.</p>
-              <PhotoGallery urls={phasePhotos} />
-              <div className="mt-3">
-                <PhotoUploader requestId={job.id!} phase={action.phase} />
-              </div>
+              <p className="mb-3 mt-1 text-xs text-text-dim">
+                Uslikaj sve <b>obavezne</b> uglove (isto PRE i POSLE) — dokaz stanja vozila.
+              </p>
+              <PhotoUploader requestId={job.id!} phase={action.phase} existing={phasePhotos} />
             </Card>
           ) : null}
 
@@ -182,8 +182,8 @@ export default function DriverJobDetailPage() {
             <Card>
               <h2 className="text-sm font-semibold uppercase tracking-wide text-text-dim">Fotografije</h2>
               <div className="mt-3 flex flex-col gap-3">
-                <PhotoGallery title="Pre" urls={job.photosBefore} />
-                <PhotoGallery title="Posle" urls={job.photosAfter} />
+                <PhotoGallery title="Pre" photos={job.photosBefore} />
+                <PhotoGallery title="Posle" photos={job.photosAfter} />
               </div>
             </Card>
           ) : null}
@@ -222,7 +222,7 @@ export default function DriverJobDetailPage() {
           </div>
           {blockedByPhoto ? (
             <p className="mx-auto mt-2 max-w-[880px] text-center text-xs text-text-faint">
-              Dodajte fotografiju da nastavite.
+              Uslikaj sve obavezne uglove da nastaviš.
             </p>
           ) : null}
         </div>
@@ -231,15 +231,19 @@ export default function DriverJobDetailPage() {
   );
 }
 
-function PhotoGallery({ title, urls }: { title?: string; urls?: string[] }) {
-  if (!urls?.length) return null;
+function PhotoGallery({ title, photos }: { title?: string; photos?: (string | JobPhoto)[] }) {
+  const list = normalizePhotos(photos);
+  if (!list.length) return null;
   return (
     <div>
       {title ? <div className="label">{title}</div> : null}
       <div className="flex flex-wrap gap-2">
-        {urls.map((u) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={u} src={u} alt={title ?? "foto"} className="h-20 w-20 rounded-lg border border-border-soft object-cover" />
+        {list.map((p, i) => (
+          <div key={p.url + i} className="w-20">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.url} alt={title ?? "foto"} className="h-20 w-20 rounded-lg border border-border-soft object-cover" />
+            {p.slot ? <div className="mt-0.5 text-center font-mono text-[9px] text-text-faint">{SLOT_LABEL[p.slot] ?? p.slot}</div> : null}
+          </div>
         ))}
       </div>
     </div>

@@ -11,7 +11,7 @@ const AFTER_OK = ["RETURNING", "DELIVERED"];
 // pišu requests direktno). 'before' pre/oko preuzimanja, 'after' pre/oko predaje.
 export const addJobPhoto = onCall({ region: REGION }, async (req) => {
   requireDriver(req);
-  const { requestId, phase, url } = parseInput(addJobPhotoSchema, req.data);
+  const { requestId, phase, url, slot } = parseInput(addJobPhotoSchema, req.data);
   const ref = db.doc(`requests/${requestId}`);
 
   await db.runTransaction(async (tx) => {
@@ -28,7 +28,8 @@ export const addJobPhoto = onCall({ region: REGION }, async (req) => {
       throw new HttpsError("failed-precondition", "Fotografije nije moguće dodati u ovoj fazi.");
     }
     const field = phase === "before" ? "photosBefore" : "photosAfter";
-    tx.update(ref, { [field]: FieldValue.arrayUnion(url), updatedAt: FieldValue.serverTimestamp() });
+    const photo = slot ? { url, slot } : { url };
+    tx.update(ref, { [field]: FieldValue.arrayUnion(photo), updatedAt: FieldValue.serverTimestamp() });
   });
 
   return { ok: true as const };

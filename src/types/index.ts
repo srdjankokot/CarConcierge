@@ -157,10 +157,17 @@ export interface CarRequest {
     phone: string;
   };
   assignedAt?: unknown;
-  photosBefore?: string[];
-  photosAfter?: string[];
+  // string = stare fotke (bez ugla); JobPhoto = vođeno slikanje (sa slot-om/uglom)
+  photosBefore?: (string | JobPhoto)[];
+  photosAfter?: (string | JobPhoto)[];
   cancelledBy?: "client" | "dispatcher";
   cancelReason?: string;
+}
+
+// Fotografija posla — vođeno slikanje: `slot` je ugao (front/rear/left…); bez slota = dodatna.
+export interface JobPhoto {
+  url: string;
+  slot?: string;
 }
 
 // requests/{id}/events — hronološki log komentara (auto-log akcija)

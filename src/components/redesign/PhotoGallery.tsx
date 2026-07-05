@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { normalizePhotos, SLOT_LABEL } from "@/lib/driver/photoSlots";
+import type { JobPhoto } from "@/types";
 
 interface Shot {
   url: string;
   phase: string;
+  slot?: string;
 }
 
 const navBtn: React.CSSProperties = {
@@ -42,20 +45,23 @@ const closeBtn: React.CSSProperties = {
   placeItems: "center",
 };
 
-function ThumbRow({ title, urls, base, onOpen }: { title: string; urls: string[]; base: number; onOpen: (i: number) => void }) {
+function ThumbRow({ title, photos, base, onOpen }: { title: string; photos: JobPhoto[]; base: number; onOpen: (i: number) => void }) {
   return (
     <div>
       <div style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, letterSpacing: ".5px", color: "var(--text-faint)", marginBottom: 8 }}>{title}</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {urls.map((u, i) => (
+        {photos.map((p, i) => (
           <button
-            key={u}
+            key={p.url + i}
             type="button"
             onClick={() => onOpen(base + i)}
-            style={{ padding: 0, border: "1px solid var(--glass-line)", borderRadius: 12, overflow: "hidden", cursor: "pointer", background: "none", lineHeight: 0 }}
+            style={{ padding: 0, border: "1px solid var(--glass-line)", borderRadius: 12, overflow: "hidden", cursor: "pointer", background: "none", lineHeight: 0, display: "block" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={u} alt={title} style={{ width: 84, height: 84, objectFit: "cover", display: "block" }} />
+            <img src={p.url} alt={title} style={{ width: 84, height: 84, objectFit: "cover", display: "block" }} />
+            {p.slot ? (
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 8.5, color: "var(--text-faint)", textAlign: "center", padding: "2px 2px", lineHeight: 1.1 }}>{SLOT_LABEL[p.slot] ?? p.slot}</div>
+            ) : null}
           </button>
         ))}
       </div>
@@ -65,12 +71,12 @@ function ThumbRow({ title, urls, base, onOpen }: { title: string; urls: string[]
 
 // Galerija foto PRE/POSLE sa popup pregledačem: navigacija strelicama/dugmićima,
 // brojač, Esc/klik za zatvaranje. Koriste klijent i dispečer.
-export function PhotoGallery({ before, after }: { before?: string[]; after?: string[] }) {
-  const beforeUrls = before ?? [];
-  const afterUrls = after ?? [];
+export function PhotoGallery({ before, after }: { before?: (string | JobPhoto)[]; after?: (string | JobPhoto)[] }) {
+  const beforeN = normalizePhotos(before);
+  const afterN = normalizePhotos(after);
   const shots: Shot[] = [
-    ...beforeUrls.map((url) => ({ url, phase: "PRE" })),
-    ...afterUrls.map((url) => ({ url, phase: "POSLE" })),
+    ...beforeN.map((p) => ({ url: p.url, phase: "PRE", slot: p.slot })),
+    ...afterN.map((p) => ({ url: p.url, phase: "POSLE", slot: p.slot })),
   ];
 
   const [index, setIndex] = useState<number | null>(null);
@@ -98,8 +104,8 @@ export function PhotoGallery({ before, after }: { before?: string[]; after?: str
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {beforeUrls.length ? <ThumbRow title="PRE" urls={beforeUrls} base={0} onOpen={setIndex} /> : null}
-        {afterUrls.length ? <ThumbRow title="POSLE" urls={afterUrls} base={beforeUrls.length} onOpen={setIndex} /> : null}
+        {beforeN.length ? <ThumbRow title="PRE" photos={beforeN} base={0} onOpen={setIndex} /> : null}
+        {afterN.length ? <ThumbRow title="POSLE" photos={afterN} base={beforeN.length} onOpen={setIndex} /> : null}
       </div>
 
       {index !== null && typeof document !== "undefined"
@@ -109,7 +115,8 @@ export function PhotoGallery({ before, after }: { before?: string[]; after?: str
             style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(0,0,0,0.92)", display: "grid", placeItems: "center", padding: "60px 18px" }}
           >
           <div style={{ position: "absolute", top: 18, left: 0, right: 0, textAlign: "center", color: "rgba(255,255,255,0.85)", fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: ".5px" }}>
-            {shots[index].phase} · {index + 1} / {shots.length}
+            {shots[index].phase}
+            {shots[index].slot ? ` · ${SLOT_LABEL[shots[index].slot!] ?? shots[index].slot}` : ""} · {index + 1} / {shots.length}
           </div>
 
           <button onClick={(e) => { e.stopPropagation(); setIndex(null); }} aria-label="Zatvori" style={closeBtn}>

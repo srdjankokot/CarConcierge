@@ -10,7 +10,7 @@ export const advanceJobStatusCallable = httpsCallable<
 >(functions, "advanceJobStatus");
 
 export const addJobPhotoCallable = httpsCallable<
-  { requestId: string; phase: "before" | "after"; url: string },
+  { requestId: string; phase: "before" | "after"; url: string; slot?: string },
   { ok: true }
 >(functions, "addJobPhoto");
 

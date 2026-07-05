@@ -6,125 +6,154 @@ import { getDownloadURL, ref as storageRef, uploadBytesResumable } from "firebas
 import { storage } from "@/lib/firebase/client";
 import { addJobPhotoCallable } from "@/lib/driver/api";
 import { mapError } from "@/lib/auth/errors";
+import { PHOTO_SLOTS, normalizePhotos } from "@/lib/driver/photoSlots";
+import { cn } from "@/lib/utils";
+import type { JobPhoto } from "@/types";
 
-type ItemStatus = "compressing" | "uploading" | "saving" | "done" | "error";
+type St = "compressing" | "uploading" | "saving" | "done" | "error";
 interface Item {
   id: string;
-  preview: string;
-  status: ItemStatus;
+  slot?: string;
+  st: St;
   progress: number;
   error?: string;
+  preview: string;
   file: File;
 }
-
-const STATUS_LABEL: Record<ItemStatus, string> = {
-  compressing: "Kompresujem…",
-  uploading: "Otpremanje…",
-  saving: "Čuvam…",
-  done: "Otpremljeno ✓",
-  error: "Greška",
-};
 
 export function PhotoUploader({
   requestId,
   phase,
+  existing,
 }: {
   requestId: string;
   phase: "before" | "after";
+  existing?: (string | JobPhoto)[];
 }) {
   const [items, setItems] = useState<Item[]>([]);
+  const persisted = normalizePhotos(existing);
 
   function patch(id: string, p: Partial<Item>) {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...p } : it)));
   }
 
-  async function upload(file: File, id: string) {
+  async function upload(file: File, id: string, slot?: string) {
     try {
-      patch(id, { status: "compressing", progress: 0, error: undefined });
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 1.2,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-      });
-      patch(id, { status: "uploading" });
-      const path = `requests/${requestId}/${phase}/${Date.now()}_${id}.jpg`;
-      const task = uploadBytesResumable(storageRef(storage, path), compressed, {
-        contentType: compressed.type || "image/jpeg",
-      });
+      patch(id, { st: "compressing", progress: 0, error: undefined });
+      const compressed = await imageCompression(file, { maxSizeMB: 1.2, maxWidthOrHeight: 1920, useWebWorker: true });
+      patch(id, { st: "uploading" });
+      const path = `requests/${requestId}/${phase}/${Date.now()}_${slot ?? "extra"}.jpg`;
+      const task = uploadBytesResumable(storageRef(storage, path), compressed, { contentType: compressed.type || "image/jpeg" });
       task.on(
         "state_changed",
         (snap) => patch(id, { progress: Math.round((snap.bytesTransferred / snap.totalBytes) * 100) }),
-        (err) => patch(id, { status: "error", error: mapError(err) }),
+        (err) => patch(id, { st: "error", error: mapError(err) }),
         async () => {
           try {
             const url = await getDownloadURL(task.snapshot.ref);
-            patch(id, { status: "saving" });
-            // Status posla se NE menja ovde — tek kad je URL upisan na zahtev (sekcija 10).
-            await addJobPhotoCallable({ requestId, phase, url });
-            patch(id, { status: "done", progress: 100 });
+            patch(id, { st: "saving" });
+            await addJobPhotoCallable({ requestId, phase, url, slot });
+            patch(id, { st: "done", progress: 100 });
           } catch (e) {
-            patch(id, { status: "error", error: mapError(e) });
+            patch(id, { st: "error", error: mapError(e) });
           }
         },
       );
     } catch (e) {
-      patch(id, { status: "error", error: mapError(e) });
+      patch(id, { st: "error", error: mapError(e) });
     }
   }
 
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+  function captureSlot(slot: string) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+      const id = crypto.randomUUID();
+      const item: Item = { id, slot, st: "compressing", progress: 0, preview: URL.createObjectURL(file), file };
+      setItems((prev) => [...prev.filter((it) => it.slot !== slot), item]);
+      void upload(file, id, slot);
+    };
+  }
+
+  function captureExtra(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
     for (const file of files) {
       const id = crypto.randomUUID();
-      setItems((prev) => [
-        ...prev,
-        { id, preview: URL.createObjectURL(file), status: "compressing", progress: 0, file },
-      ]);
+      setItems((prev) => [...prev, { id, st: "compressing", progress: 0, preview: URL.createObjectURL(file), file }]);
       void upload(file, id);
     }
   }
 
-  return (
-    <div className="flex flex-col gap-3">
-      <label className="btn-ghost w-full cursor-pointer">
-        + Dodaj fotografije
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          multiple
-          className="hidden"
-          onChange={onPick}
-        />
-      </label>
+  const extraItems = items.filter((it) => !it.slot);
+  const persistedExtras = persisted.filter((p) => !p.slot);
 
-      {items.length > 0 ? (
-        <div className="flex flex-wrap gap-3">
-          {items.map((it) => (
-            <div key={it.id} className="w-24">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={it.preview} alt="" className="h-24 w-24 rounded-lg border border-border-soft object-cover" />
-              <div
-                className={
-                  it.status === "error"
-                    ? "mt-1 text-xs text-danger"
-                    : it.status === "done"
-                      ? "mt-1 text-xs text-mint"
-                      : "mt-1 text-xs text-text-dim"
-                }
-              >
-                {it.status === "uploading" ? `${STATUS_LABEL.uploading} ${it.progress}%` : STATUS_LABEL[it.status]}
-              </div>
-              {it.status === "error" ? (
-                <button onClick={() => void upload(it.file, it.id)} className="text-xs text-accent">
-                  Pokušaj ponovo
-                </button>
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+        {PHOTO_SLOTS.map((s) => {
+          const sess = items.find((it) => it.slot === s.key);
+          const existUrl = persisted.find((p) => p.slot === s.key)?.url;
+          const thumb = sess?.preview ?? existUrl;
+          const done = sess ? sess.st === "done" : !!existUrl;
+          const busy = sess && sess.st !== "done" && sess.st !== "error";
+          const err = sess?.st === "error";
+          return (
+            <label
+              key={s.key}
+              className={cn(
+                "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-xl border bg-bg-2",
+                done ? "border-mint" : err ? "border-danger" : s.required && !thumb ? "border-[color:var(--warn)]" : "border-border-soft",
+              )}
+            >
+              {thumb ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumb} alt={s.label} className="absolute inset-0 h-full w-full object-cover" />
               ) : null}
-            </div>
-          ))}
-        </div>
-      ) : null}
+              <div
+                className="relative z-10 flex flex-col items-center gap-1 px-1 text-center"
+                style={thumb ? { color: "#fff", textShadow: "0 1px 5px rgba(0,0,0,.75)" } : { color: "var(--text-dim)" }}
+              >
+                {done ? (
+                  <span className="text-lg text-mint" style={{ textShadow: "0 1px 5px rgba(0,0,0,.6)" }}>✓</span>
+                ) : busy ? (
+                  <span className="text-xs">{sess!.st === "uploading" ? `${sess!.progress}%` : "…"}</span>
+                ) : (
+                  <span className="text-xl">＋</span>
+                )}
+                <span className="text-[11px] font-medium leading-tight">{s.label}</span>
+                {!thumb && s.required ? <span className="text-[9px] text-[color:var(--warn)]">obavezno</span> : null}
+              </div>
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={captureSlot(s.key)} />
+            </label>
+          );
+        })}
+      </div>
+
+      <div>
+        <label className="btn-ghost w-full cursor-pointer text-sm">
+          + Dodatne fotografije
+          <input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={captureExtra} />
+        </label>
+        {extraItems.length || persistedExtras.length ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {persistedExtras.map((p) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={p.url} src={p.url} alt="" className="h-16 w-16 rounded-lg border border-border-soft object-cover" />
+            ))}
+            {extraItems.map((it) => (
+              <div key={it.id} className="w-16">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={it.preview} alt="" className="h-16 w-16 rounded-lg border border-border-soft object-cover" />
+                <div className={cn("mt-0.5 text-[10px]", it.st === "error" ? "text-danger" : it.st === "done" ? "text-mint" : "text-text-dim")}>
+                  {it.st === "uploading" ? `${it.progress}%` : it.st === "done" ? "✓" : it.st === "error" ? "greška" : "…"}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
